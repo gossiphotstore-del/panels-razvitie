@@ -192,17 +192,7 @@ table.t{border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%;
 .ctl .ddb{padding:4px 11px}
 .lch{background:#fff;border:1px solid #e1e2de;border-radius:14px;padding:8px 16px}
 .lch .ct{font-size:18px}
-.avc{margin-top:8px}
-.avh{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
-.avh b{font-size:15px;border-left:4px solid;padding-left:7px}
-.avh span{font-size:12px;color:#566459}
-.avv{font-size:13px;margin:3px 0 4px;white-space:nowrap}
-.avv b.mn{font-size:19px}
-.avv i{font-style:normal;color:#566459}
-.avb{display:flex;height:22px;border-radius:6px;overflow:hidden}
-.avb div{font:600 12px/22px Inter,sans-serif;text-align:center;white-space:nowrap}
-.avl{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:11.5px;color:#566459;margin:4px 0 2px}
-.avl i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.avn{font-size:11.5px;color:#7b837d;margin:1px 0 2px}
 .lch .row{display:flex;align-items:center;gap:14px;font-size:13px;color:#566459;margin-top:1px;white-space:nowrap}
 .lch .row b{font-size:16px;color:#1f2a22;border-left:4px solid #2f8a3e;padding-left:7px;margin-right:6px}
 .lch .row b.dk{border-left-color:#5f6770}
@@ -704,11 +694,12 @@ function netMetric(id){const p=S.lp,y=RNG[p],mo=PMON(p),ok=p==='year'?'ytd':p,op
    case 'nbShare':return{t:'✓ Новички',sm:1,cols:[{h:['доля,','%'],v:r=>mean(opp(r),o=>o.nbSh)}]}}}
 function metricsBlock(defs,key,hint){const on=S[key].split(',');
   return `<div class="mt"><h3>Метрики в таблице</h3>${hint?`<div class="hint">${hint}</div>`:''}<div class="pick">${colPicker()}</div><div class="cols">${defs.map(col=>`<div>${col.map(([g,items])=>`<div class="mg">${g}</div>${items.length?'':'<div class="msoon">будет дополнено позже</div>'}${items.map(([id,l])=>id==='#'?`<div class="msub">${l}</div>`:`<button class="ck ${on.includes(id)?'on':''}" data-tog="${key}:${id}"><i>${on.includes(id)?'✓':''}</i><span>${l}</span></button>`).join('')}`).join('')}</div>`).join('')}</div></div>`}
-function avChart(key,ks,title,sub,cols){const L=AVS[key],c=L.map((_,i)=>avK(ks,key,[10],i)),g=avG(ks,key,[10]),seg=[...c.map((v,i)=>v-(i?c[i-1]:0)),100-c[c.length-1]],lab=[...L.map((l,i)=>i?`${L[i-1].slice(3,5)}–${i===3?'60':l.slice(3,5)} мин`:l),key==='on'?'дольше часа':'дальше 30 мин'];
-  return `<div class="avc"><div class="avh"><b style="border-left-color:${cols[0]}">${title}</b><span>${sub}</span></div>
-   <div class="avv"><i>до 30 минут</i> <b class="mn">${n(c[2],1)}%</b> <i>покупателей · рост с января</i> <b>${sg(g,1)} п.п.</b></div>
-   <div class="avb">${seg.map((v,i)=>`<div style="width:${v.toFixed(2)}%;background:${cols[i]||'#e4e6e2'};color:${i<2?'#fff':'#2a332c'}" title="${lab[i]}: ${n(v,1)}% покупателей">${v>=7?n(v):''}</div>`).join('')}</div>
-   <div class="avl">${lab.map((l,i)=>`<span><i style="background:${cols[i]||'#e4e6e2'}"></i>${l}</span>`).join('')}</div></div>`}
+function avBars(ks,terr){const cO='#5fa56e',cW='#878e96',w=446,h=128,base=h-22,ph=base-20,bw=30,L=['до 10 мин','до 20 мин','до 30 мин','до 1 час'];
+  const G=L.map((l,i)=>[avK(ks,'on',[10],i),i<3?avK(ks,'off',[10],i):null]),gw=w/4;
+  const bar=(x,v,c,nm,l)=>{const bh=Math.max(2,ph*v/100);return `<rect x="${x}" y="${(base-bh).toFixed(1)}" width="${bw}" height="${bh.toFixed(1)}" rx="2" fill="${c}"><title>${nm}, ${l}: ${n(v,1)}% покупателей</title></rect><text x="${x+bw/2}" y="${(base-bh-4).toFixed(1)}" font-size="12" font-weight="700" fill="#1f2a22" text-anchor="middle">${n(v)}%</text>`};
+  return `<div class="row"><span><i style="background:${cO}"></i>онлайн-заказ, расчётное время</span><span><i style="background:${cW}"></i>пешком</span></div>
+   <svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="display:block"><line x1="0" x2="${w}" y1="${base}" y2="${base}" stroke="#d3d5d2"/>${G.map(([o,f],i)=>{const cx=gw*i+gw/2;return (f==null?bar(cx-bw/2,o,cO,'Онлайн-заказ',L[i]):bar(cx-bw-4,o,cO,'Онлайн-заказ',L[i])+bar(cx+4,f,cW,'Пешком',L[i]))+`<text x="${cx}" y="${h-6}" font-size="12" fill="#566459" text-anchor="middle">${L[i]}</text>`}).join('')}</svg>
+   <div class="avn">накопительно, % покупателей ${terr}</div>`}
 function lrkChart(f,ks){const s={fs:[f],ks,type:'all'},L=O(s),T=TK[f],ws=f==='WS';
   const cT='#d3d5d2',cF=ws?'#5fa56e':'#878e96',cP=ws?'#c6e2c1':'#d5d9dd';
   const bars=(t,fa,fo)=>{const a=[{v:t,c:cT,t:n(t)},{v:fa,c:cF,t:n(fa),m:1}];if(fo!=null)a.push({v:fo,c:cP,dash:cF,t:n(fo)});return a};
@@ -769,7 +760,7 @@ function vLrk(){const b=baseSel(),kv=!!S.k,L=O(b),both={fs:['WS','DS'],ks:b.ks,t
   return header('Прототип дашборда ЛРК',`Результаты: ${pn}${kv?` · <span class="g">${kFull()}</span>`:''}`,crumbs())+promise('lrk')+flt+
    `<div class="lrk blk fade"><div class="lc">${band}${row1}${row2}${ctl}${arow}${tbl}</div><div class="rc">
    <div class="lch"><div class="ct mn">${kv?`Открытия: ${kFull()}, шт.`:{all:'Открытия по сети, шт.',kust:'Открытия по кустам, шт.',reg:'Открытия по регионам, шт.'}[S.g]}</div>${lrkChart('WS',b.ks)}</div><div class="lch">${lrkChart('DS',b.ks)}</div>
-   <div class="lch"><div class="ct mn">Доступность для покупателей, %${kv?' · '+kFull():''}</div>${avChart('off',b.ks,'Офлайн · White Store','пешая доступность магазина',['#3f9352','#7dbb86','#bfe0c0'])}${avChart('on',b.ks,'Онлайн · Dark Store','время доступности онлайн-заказа',['#5f6770','#878e96','#b4bac0','#d5d9dd'])}</div>
+   <div class="lch"><div class="ct mn">Доля покупателей по доступности, %</div>${avBars(b.ks,kv?'территории: '+kFull():S.g==='kust'?'территории кустов':S.g==='reg'?'территории регионов':'территории сети')}</div>
    ${kv?metricsBlock(avDefs(MKUST),'km','по магазину'):metricsBlock(avDefs(MNET),'m','')}</div></div>`}
 
 /* ---------- Поиск ---------- */
