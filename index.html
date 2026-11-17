@@ -671,10 +671,11 @@ function vHome(){const ws={fs:['WS'],ks:null,type:'all'},both={fs:['WS','DS'],ks
   return `<div class="homehd">${LOGO(64)}<div style="flex:1">${header('Рабочие панели развития','Выберите рабочую панель','910-я неделя')}</div></div>`+`<div class="cards">${DASH.map(([id,,full])=>`<button class="card" ${J({d:id})}><div class="cardhd"><h3>${full}</h3></div><p><b>Обещание:</b> ${PROMISE[id][1]}</p><div class="k3">${K[id].map(([v,l,t,bad])=>`<div><b>${v}</b><span>${l}</span><em class="${bad?'bad':''}">${bad?'● ':''}${t}</em></div>`).join('')}</div><div class="lv3">${LV[id]}</div></button>`).join('')}</div>`}
 
 /* ---------- ЛРК ---------- */
-const MNET=[[['Новые открытия',[['signed','подписано'],['toBuild','передано в стройку'],['pipeF','пайплайн (прогноз к цели)'],['expT','расширения к цели'],['smr','срок СМР'],['noAho','не передано в АХО'],['nbShare','доля новичков, %'],
-   ['#','Инвестиции'],['roi','ROI и окупаемость'],['budget','% израсходованного бюджета'],['cost','стоимость открытия (CAPEX)'],['capexM2','CAPEX за м²'],['smrM2','СМР за м²'],['expCapex','CAPEX расширения на 1 магазин']]]],
+const MNET=[[['Новые открытия',[['signed','подписано'],['toBuild','передано в стройку'],['pipeF','пайплайн (прогноз к цели)'],['smr','срок СМР'],['noAho','не передано в АХО'],['nbShare','доля новичков, %'],
+   ['#','Инвестиции'],['roi','ROI и окупаемость'],['budget','% израсходованного бюджета'],['cost','стоимость открытия (CAPEX)'],['capexM2','CAPEX за м²'],['smrM2','СМР за м²']]]],
  [['Эффективность',[['rentShare','доля аренды'],['rentNew','доля аренды новых открытий'],['opt','оптимизация аренды'],['prol','пролонгации'],['subl','субаренда: сдано, %'],['sublDev','субаренда: откл. от 97%']]],
-  ['Выручка',[['rev','выручка новых открытий'],['expRev','прирост выручки расширений']]],['Клиентские метрики',[['availOff','пешая доступность ВС: 10 / 20 / 30 мин'],['availOn','доступность онлайн-заказа ДС: 10 / 20 / 30 мин / час']]]]];
+  ['Расширения',[['expT','план / факт, % выполнения цели'],['expM2','CAPEX за м², откл. от цели'],['expCapex','CAPEX на 1 магазин'],['expRev','прирост выручки']]],
+  ['Выручка',[['rev','выручка новых открытий']]],['Клиентские метрики',[['availOff','пешая доступность ВС: 10 / 20 / 30 мин'],['availOn','доступность онлайн-заказа ДС: 10 / 20 / 30 мин / час']]]]];
 const MKUST=[[['Новые открытия',[['retail','передан в розницу'],['nb','новички, чел.'],['nbShare','доля новичков, %'],['#','Инвестиции'],['roi','ROI, %'],['capexStore','CAPEX на магазин, млн ₽'],['capexM2','CAPEX за м², тыс. ₽']]]],
  [['Эффективность',[['rentShare','доля аренды'],['varPart','доля аренды: переменная часть'],['lease','остаточный срок договора аренды'],['free','свободная площадь, %']]],['Выручка',[['rev','выручка магазина']]],['Клиентские метрики',[['availOff','пешая доступность ВС: 10 / 20 / 30 мин'],['availOn','доступность онлайн-заказа ДС: 10 / 20 / 30 мин / час']]]]];
 const avOk=id=>id==='availOff'?S.f!=='DS':id==='availOn'?S.f!=='WS':true,avDefs=d=>d.map(c=>c.map(([g,it])=>[g,it.filter(([id])=>avOk(id))]));
@@ -697,7 +698,8 @@ function netMetric(id){const p=S.lp,y=RNG[p],mo=PMON(p),ok=p==='year'?'ytd':p,op
    case 'toBuild':return{t:'✓ В стройку',sm:1,cols:[{h:['за','период'],v:r=>cnt(r.L,'dB',y)}]};
    case 'openedN':return{t:'✓ Открыто',sm:1,cols:[{h:['за','период'],v:r=>cnt(r.L,'dO',y)}]};
    case 'pipeF':return{t:'✓ Пайплайн',sm:1,cols:[{h:['','шт'],v:r=>pipe(r.L,y)},{h:['прогноз','к цели'],v:r=>pc(pipe(r.L,FULL[p]),tg(r.s,f=>TK[f].pipe[p])),f:pct,red:v=>v<80}]};
-   case 'expT':return{t:'✓ Расширения',sm:1,cols:[{h:['','факт'],v:r=>ex(r).length},{h:['','цель'],v:r=>Math.round(tg(r.s,f=>TK[f].exp)*PSC(p))}]};
+   case 'expT':return{t:'✓ Расширения, шт',cols:[{h:['','факт'],v:r=>ex(r).length},{h:['','цель'],v:r=>Math.round(tg(r.s,f=>TK[f].exp)*PSC(p))},{h:['% вып.','цели'],v:r=>{const t=Math.round(tg(r.s,f=>TK[f].exp)*PSC(p));return t?pc(ex(r).length,t):null},f:pct,red:v=>v<80}]};
+   case 'expM2':return{t:'✓ Расш.: CAPEX за м²',cols:[{h:['тыс. ₽','за м²'],d:1,v:r=>m2of(ex(r))},{h:['откл.','от цели'],v:r=>{const e=ex(r);return e.length?(m2of(e)/tgtOf(e,'m2')-1)*100:null},f:spct,red:v=>v>5}]};
    case 'expCapex':return{t:'✓ CAPEX расш.',sm:1,cols:[{h:['на 1 маг.,','млн ₽'],d:1,v:r=>mean(ex(r),o=>o.capex)}]};
    case 'expRev':return{t:'✓ Выручка расш.',sm:1,cols:[{h:['прирост,','%'],v:r=>mean(ex(r),o=>o.gain),f:spct}]};
    case 'cost':return{t:'✓ Стройка',cols:[{h:['','млн ₽'],d:1,v:r=>mean(opp(r),o=>o.capex)},{h:['','к цели'],v:r=>{const op=opp(r);return op.length?(mean(op,o=>o.capex)/tgtOf(op,'capex')-1)*100:null},f:spct,red:v=>v>5}]};
