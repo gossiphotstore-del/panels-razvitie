@@ -218,6 +218,11 @@ table.t{border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%;
 .mt .hint{font-size:13px;color:#566459}
 .mt .cols{display:flex;gap:10px}
 .mt .cols>div{flex:1;min-width:0}
+.msec{font:inherit;text-transform:inherit;letter-spacing:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;text-align:left;white-space:nowrap}
+.mg .msec i{font-style:normal;font-size:12px;line-height:1;color:#2f8a3e;width:12px;flex:none}
+.msec em{font-style:normal;font-size:11px;letter-spacing:0;background:#3f9352;color:#fff;border-radius:9px;padding:0 6px;line-height:16px}
+.msec:hover{color:#2f8a3e}
+.mclr{text-decoration:none!important;white-space:nowrap}
 .mth{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .mall{font:600 12px Inter,sans-serif;color:#566459;background:#f4f5f2;border:1px solid #dcdfd8;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
 .mbt{display:flex;gap:6px}
@@ -567,7 +572,7 @@ const J=o=>`data-set='${JSON.stringify(o)}'`;
 function dev(v,d,bad,unit=''){if(v==null||!isFinite(v))return '—';const t=sg(v,d)+unit;return bad?`<span class="bad">${v>0?'▲':'▼'} ${t}</span>`:`<b class="ok">${t}</b>`}
 function pdev(v,bad){if(v==null)return '—';return bad?`<span class="bad">▼ ${pct(v)}</span>`:`<b class="ok">${pct(v)}</b>`}
 
-const DEF={d:'home',g:'all',sm:'',h:'',cp:'',f:'WS',p:'week',lp:'month',k:'',r:'kust',t:'all',m:'opn,speed,rentShare,cost,rev,pipeF',km:'rev,rentShare,nb,capexStore,capexM2'};
+const DEF={d:'home',g:'all',sm:'',h:'',cp:'',f:'WS',p:'week',lp:'month',k:'',r:'kust',t:'all',m:'opn,speed,rentShare,cost',km:'rev,rentShare,nb,capexStore,capexM2'};
 let S={...DEF},SORT=null;
 const FN={WS:'White Store',DS:'Dark Store'};
 const DASH=[['lrk','ЛРК','Панель ЛРК'],['search','Поиск','Панель лидера поиска'],['rent','Аренда','Панель лидера аренды'],['build','Стройка','Панель лидера стройки']];
@@ -706,8 +711,8 @@ function netMetric(id,p){const y=RNG[p],mo=PMON(p),ok=p==='year'?'ytd':p,opp=r=>
    case 'signed':return{t:'✓ Подписано',sm:1,cols:[{h:['за','период'],v:r=>cnt(r.L,'dS',y)}]};
    case 'toBuild':return{t:'✓ В стройку',sm:1,cols:[{h:['за','период'],v:r=>cnt(r.L,'dB',y)}]};
    case 'openedN':return{t:'✓ Открыто',sm:1,cols:[{h:['за','период'],v:r=>cnt(r.L,'dO',y)}]};
-   case 'pipeF':return{t:'✓ Пайплайн',sm:1,cols:[{h:['','шт'],v:r=>pipe(r.L,y)},{h:['прогноз','к цели'],v:r=>pc(pipe(r.L,FULL[p]),tg(r.s,f=>TK[f].pipe[p])),f:pct,red:v=>v<80}]};
-   case 'expT':return{t:'✓ Расширения, шт',cols:[{h:['','факт'],v:r=>ex(r).length},{h:['','цель'],v:r=>Math.round(tg(r.s,f=>TK[f].exp)*PSC(p))},{h:['% вып.','цели'],v:r=>{const t=Math.round(tg(r.s,f=>TK[f].exp)*PSC(p));return t?pc(ex(r).length,t):null},f:pct,red:v=>v<80}]};
+   case 'pipeF':return{t:'✓ Пайплайн',sm:1,cols:[{h:['','шт'],v:r=>pipe(r.L,y)},{h:['прогноз','к цели'],v:r=>pc(pipe(r.L,FULL[p]),tg(r.s,f=>TK[f].pipe[p])),f:pct,red:(v,r)=>v<80&&tg(r.s,f=>TK[f].pipe[p])>=3}]};
+   case 'expT':return{t:'✓ Расширения, шт',cols:[{h:['','факт'],v:r=>ex(r).length},{h:['','цель'],v:r=>Math.round(tg(r.s,f=>TK[f].exp)*PSC(p))},{h:['% вып.','цели'],v:r=>{const t=Math.round(tg(r.s,f=>TK[f].exp)*PSC(p));return t?pc(ex(r).length,t):null},f:pct,red:(v,r)=>v<80&&Math.round(tg(r.s,f=>TK[f].exp)*PSC(p))>=3}]};
    case 'expM2':return{t:'✓ Расш.: CAPEX за м²',cols:[{h:['тыс. ₽','за м²'],d:1,v:r=>m2of(ex(r))},{h:['откл.','от цели'],v:r=>{const e=ex(r);return e.length?(m2of(e)/tgtOf(e,'m2')-1)*100:null},f:spct,red:v=>v>5}]};
    case 'expCapex':return{t:'✓ CAPEX расш.',sm:1,cols:[{h:['на 1 маг.,','млн ₽'],d:1,v:r=>mean(ex(r),o=>o.capex)}]};
    case 'expRev':return{t:'✓ Выручка расш.',sm:1,cols:[{h:['прирост,','%'],v:r=>mean(ex(r),o=>o.gain),f:spct}]};
@@ -718,11 +723,13 @@ function netMetric(id,p){const y=RNG[p],mo=PMON(p),ok=p==='year'?'ytd':p,opp=r=>
    case 'smr':return{t:'✓ Срок СМР',sm:1,cols:[{h:['','дн'],v:r=>mean(opp(r),o=>o.s[6])}]};
    case 'noAho':return{t:'✓ Не в АХО',sm:1,cols:[{h:['не пере-','дано'],v:r=>opp(r).filter(o=>!o.aho).length}]};
    case 'nbShare':return{t:'✓ Новички',sm:1,cols:[{h:['доля,','%'],v:r=>mean(opp(r),o=>o.nbSh)}]}}}
+const SECO=new Set(['Новые открытия']);
 function metricsBlock(defs,key,hint){const on=S[key].split(',').filter(Boolean),all=defs.flat().flatMap(g=>g[1]).map(x=>x[0]).filter(x=>x!=='#'),anyOn=all.some(id=>on.includes(id));
-  const clr=(ids,what)=>{const a=ids.filter(id=>on.includes(id));return a.length?`<button class="mclr" data-clr="${key}:${a.join(',')}" title="Убрать из таблицы метрики раздела «${what}»">сбросить</button>`:''};
+  const clr=(ids,what)=>{const a=ids.filter(id=>on.includes(id));return a.length?`<button class="mclr" data-clr="${key}:${a.join(',')}" title="Сбросить: убрать из таблицы метрики раздела «${what}»">✕ сброс</button>`:''};
   const grp=([g,items])=>{const i=items.findIndex(x=>x[0]==='#'),main=(i<0?items:items.slice(0,i)).map(x=>x[0]),sub=i<0?[]:items.slice(i+1).map(x=>x[0]);
-    return `<div class="mg"><span>${g}</span>${clr(main,g)}</div>${items.length?'':'<div class="msoon">будет дополнено позже</div>'}${items.map(([id,l])=>id==='#'?`<div class="msub"><span>${l}</span>${clr(sub,l)}</div>`:`<button class="ck ${on.includes(id)?'on':''}" data-tog="${key}:${id}"><i>${on.includes(id)?'✓':''}</i><span>${l}</span></button>`).join('')}`};
-  return `<div class="mt"><div class="mth"><h3>Метрики в таблице</h3><span class="mbt"><button class="mall" ${J({[key]:DEF[key]})}${S[key]===DEF[key]?' disabled':''} title="Вернуть стартовый набор метрик">Стартовый набор</button><button class="mall" ${J({[key]:key==='m'?'opn,speed':''})}${S[key]===(key==='m'?'opn,speed':'')?' disabled':''} title="Убрать все добавленные метрики${key==='m'?' — останутся только открытия и скорость':''}">Сбросить все</button></span></div><div class="hint">${hint?hint+' · ':''}отмеченное галочками показано в таблице</div><div class="cols">${defs.map(col=>`<div>${col.map(grp).join('')}</div>`).join('')}</div></div>`}
+    const nOn=[...main,...sub].filter(id=>on.includes(id)).length,opn=SECO.has(g);
+    return `<div class="mg"><button class="msec" data-sec="${g}"><i>${opn?'▾':'▸'}</i>${g}${nOn?`<em>${nOn}</em>`:''}</button>${clr(main,g)}</div>${!opn?'':(items.length?'':'<div class="msoon">будет дополнено позже</div>')+items.map(([id,l])=>id==='#'?`<div class="msub"><span>${l}</span>${clr(sub,l)}</div>`:`<button class="ck ${on.includes(id)?'on':''}" data-tog="${key}:${id}"><i>${on.includes(id)?'✓':''}</i><span>${l}</span></button>`).join('')}`};
+  return `<div class="mt"><div class="mth"><h3>Метрики в таблице</h3><span class="mbt"><button class="mall" ${J({[key]:DEF[key]})}${S[key]===DEF[key]?' disabled':''} title="Вернуть стартовый набор метрик">Стартовый набор</button><button class="mall" ${J({[key]:key==='m'?'opn,speed':''})}${S[key]===(key==='m'?'opn,speed':'')?' disabled':''} title="Убрать все добавленные метрики${key==='m'?' — останутся только открытия и скорость':''}">Сбросить все</button></span></div><div class="hint">${hint?hint+' · ':''}отмеченное галочками показано в таблице · разделы раскрываются по клику</div><div class="cols">${defs.map(col=>`<div>${col.map(grp).join('')}</div>`).join('')}</div></div>`}
 function avBars(ks,onW,onD,terr){const cO='#5fa56e',cW='#878e96',dO='#2f7a40',dW='#565d65',w=446,h=146,base=h-22,ph=base-36,bw=30,L=['до 10 мин','до 20 мин','до 30 мин','до 1 час'];
   const pair=(key,i)=>({v:avK(ks,key,[10],i),g:avK(ks,key,[10],i)-avK(ks,key,[0],i)}),G=L.map((l,i)=>[pair('on',i),i<3?pair('off',i):null]),gw=w/4;
   const nW=cnt(O({fs:['WS'],ks,type:'all'}),'dO',RNG.year),nD=cnt(O({fs:['DS'],ks,type:'all'}),'dO',RNG.year);
@@ -763,7 +770,7 @@ function vLrk(){const b=baseSel(),kv=!!S.k,L=O(b),both=b,LB=L,onW=b.fs.includes(
    ${cap(ws,'WS','ws')}${cap(ds,'DS','dk')}</div>`;
   const flt=`<div class="filters blk"><span class="fl">ФИЛЬТРЫ</span>${seg('f',kv?[['WS','White Store'],['DS','Dark Store']]:[['ALL','ВС + ДС'],['WS','White Store'],['DS','Dark Store']])}
    <div class="fg"><span>Период</span><div class="seg multi" title="Можно выбрать один период или несколько сразу">${[['month','Месяц'],['quarter','Квартал'],['year','Год']].map(([v,l])=>`<button class="${LPS().includes(v)?'on':''}" data-tog="lp:${v}">${LPS().includes(v)?'✓ ':''}${l}</button>`).join('')}<button class="${LPS().length===3?'on':''}" ${J({lp:'month,quarter,year'})}>Все</button></div>${LPS().length>1?`<span class="lpn">плашки сверху — за ${PNM[LPM()]}</span>`:''}</div>${kustDD()}<button class="rst" data-reset>Сбросить фильтры</button></div>`;
-  const ctl=`<div class="ctl"><h2>${kv?`Магазины: <span class="g">${kFull()}</span> <small style="font:500 14px Inter,sans-serif;color:#566459">· открытые в 2026 году</small>`:GROWS[S.g][0].toUpperCase()+GROWS[S.g].slice(1)}</h2>${kv?'<span class="sp1"></span>':attention(b,r=>{const t=tg(r.s,f=>TK[f].openY);return t>=3?pc(cnt(r.L,'dO',FULL.year),t):null},v=>'прогноз года '+pct(v))}${how('красным — скорость дольше цели и хуже средней по сети более чем на 10% · выручка ниже цели более чем на 20% · доля аренды выше цели более чем на 0,5 п.п. · CAPEX дороже цели более чем на 5% · прогноз — открыто + объекты, которые успевают открыться до конца периода · ROI — условная годовая прибыль магазинов к вложениям в их открытие (демо-расчёт) · доступность (демо, значения накопительные): офлайн — доля покупателей, которые доходят до магазина ВС пешком за 10 / 20 / 30 минут; онлайн — доля покупателей с расчётным временем доступности онлайн-заказа из ДС 10 / 20 / 30 минут / час; рост — изменение доли «до 30 минут» с января')}</div>`;
+  const ctl=`<div class="ctl"><h2>${kv?`Магазины: <span class="g">${kFull()}</span> <small style="font:500 14px Inter,sans-serif;color:#566459">· открытые за ${pn}</small>`:GROWS[S.g][0].toUpperCase()+GROWS[S.g].slice(1)}</h2>${kv?'<span class="sp1"></span>':attention(b,r=>{const t=tg(r.s,f=>TK[f].openY);return t>=3?pc(cnt(r.L,'dO',FULL.year),t):null},v=>'прогноз года '+pct(v))}${how('красным — скорость дольше цели и хуже средней по сети более чем на 10% · выручка ниже цели более чем на 20% · доля аренды выше цели более чем на 0,5 п.п. · CAPEX дороже цели более чем на 5% · прогноз — открыто + объекты, которые успевают открыться до конца периода · ROI — условная годовая прибыль магазинов к вложениям в их открытие (демо-расчёт) · доступность (демо, значения накопительные): офлайн — доля покупателей, которые доходят до магазина ВС пешком за 10 / 20 / 30 минут; онлайн — доля покупателей с расчётным временем доступности онлайн-заказа из ДС 10 / 20 / 30 минут / час; рост — изменение доли «до 30 минут» с января')}</div>`;
   const arow='';
   let tbl;
   if(!kv){const PN={month:'Ноябрь',quarter:'IV квартал',year:'2026 год'},ot=p=>f=>p==='month'?TK[f].open.nov:p==='quarter'?TK[f].open.q[3]:TK[f].openY;
@@ -774,7 +781,7 @@ function vLrk(){const b=baseSel(),kv=!!S.k,L=O(b),both=b,LB=L,onW=b.fs.includes(
     const groups=[
      ...S.m.split(',').filter(id=>id!=='#'&&avOk(id)&&MNET.flat().some(g=>g[1].some(x=>x[0]===id))).flatMap(id=>{if(id==='opn')return LPS().map(pg);if(id==='speed')return spdG();const gs=LPS().map(q=>[netMetric(id,q),q]);return multi&&gs[0][0].cols.length===1?[{t:gs[0][0].t,cols:gs.map(([g,q])=>({...g.cols[0],h:[{month:'ноябрь',quarter:'IV кв.',year:'год'}[q],g.cols[0].h.filter(Boolean).join(' ').replace(/^за период$/,'шт')]}))}]:gs.map(([g,q])=>tag(g,q))})];
     tbl=table({fixed:[kustCol],groups,rows:kRows(b),totals:tots(b),minCol:60,rowClick:r=>({k:KID(r.k)})})}
-  else{const on=S.km.split(','),sv=(fo,fl)=>r=>r.o?fo(r.o):r.L.length?fl(r.L):null,rows=op.slice().sort((a,c)=>a.dO-c.dO).map((o,i)=>({o,i:i+1}));
+  else{const on=S.km.split(','),sv=(fo,fl)=>r=>r.o?fo(r.o):r.L.length?fl(r.L):null,rows=opP.slice().sort((a,c)=>a.dO-c.dO).map((o,i)=>({o,i:i+1}));
     const g=[{t:'Открытие',sm:1,cols:[{h:['','дата'],v:r=>r.o?dm(r.o.dO):r.L.length+' шт.'}]},
      {t:'Скорость, дн',cols:[{h:['','факт'],v:sv(o=>o.sp8,l=>mean(l,o=>o.sp8))},{h:['','откл.'],v:sv(o=>Math.round(o.sp8)-CFG[o.f].T.speed,l=>Math.round(mean(l,o=>o.sp8))-CFG[l[0].f].T.speed),f:v=>sg(v),red:v=>v>0}]},
      on.includes('rev')&&{t:'✓ Выручка',cols:[{h:['в день,','тыс. ₽'],v:sv(o=>o.rev,l=>mean(l,o=>o.rev))},{h:['на м²,','тыс. ₽'],d:1,v:sv(o=>o.rev*30/o.area,l=>sum(l,o=>o.rev*30)/sum(l,o=>o.area))},
@@ -791,7 +798,7 @@ function vLrk(){const b=baseSel(),kv=!!S.k,L=O(b),both=b,LB=L,onW=b.fs.includes(
     if(cC.length)g.push({t:'✓ Инвестиции',sm:cC.length<2,cols:cC});
     const aK=S.f==='DS'?'availOn':'availOff';if(on.includes(aK))g.push({t:S.f==='DS'?'✓ Онлайн':'✓ Офлайн',sm:1,cols:[{h:['до 30','мин, %'],d:1,v:sv(o=>o.av,l=>mean(l,o=>o.av))}]});
     tbl=table({fixedTitle:'Магазин',fixed:[{h:['','№'],w:44,al:'c',v:r=>r.i},{h:['','адрес'],w:250,al:'l',lab:1,v:r=>r.o.addr}],groups:g,rows,
-      totals:[{L:op,lab:`${kFull()}, итого`},{L:opened(O({...b,ks:null})),lab:'Вся сеть'}],minCol:64,empty:`${kFull()}: нет магазинов ${FN[S.f]}, открытых в 2026 году`})}
+      totals:[{L:opP,lab:`${kFull()}, итого`},{L:opened(O({...b,ks:null}),P),lab:'Вся сеть'}],minCol:64,empty:`${kFull()}: за ${pn} открытий ${FN[S.f]} не было — выберите период длиннее`})}
   return header('Прототип дашборда ЛРК',`Результаты: ${pn}${kv?` · <span class="g">${kFull()}</span>`:''}`,crumbs(),'данные на 8 ноября 2026')+promise('lrk')+flt+
    `<div class="lrk blk fade"><div class="lc">${band}${row1}${row2}${ctl}${arow}${tbl}</div><div class="rc">
    <div class="lch"><div class="ct mn">${kv?`Открытия: ${kFull()}, шт.`:{all:'Открытия по сети, шт.',kust:'Открытия по кустам, шт.',reg:'Открытия по регионам, шт.'}[S.g]}</div>${lrkChart('WS',b.ks,!onW)}</div><div class="lch">${lrkChart('DS',b.ks,!onD)}</div>
@@ -949,7 +956,7 @@ function apply(o){
   if('d' in o){if(o.d!==S.d){STORE[S.d]=snap();S={...(STORE[o.d]||fresh(o.d)),d:o.d};SORT=null}return render()}
   if(Object.keys(o).every(k=>S[k]===o[k])&&!('g' in o&&S.k))return;
   SORT=null;pushHist();Object.assign(S,o);if('g' in o&&!('k' in o))S.k='';render()}
-document.addEventListener('click',e=>{const t=e.target.closest('[data-set],[data-dd],[data-tog],[data-clr],[data-col],[data-pre],[data-sort],[data-reset],[data-undo]');
+document.addEventListener('click',e=>{const t=e.target.closest('[data-set],[data-dd],[data-tog],[data-clr],[data-sec],[data-col],[data-pre],[data-sort],[data-reset],[data-undo]');
   document.querySelectorAll('details.how[open]').forEach(x=>{if(!x.contains(e.target))x.open=false});
   document.querySelectorAll('.ddl').forEach(x=>{if(!t||!t.hasAttribute('data-dd')||x.previousElementSibling!==t)x.hidden=true});
   if(!t)return;
@@ -957,6 +964,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-set],[data
   if(t.dataset.set)return apply(JSON.parse(t.dataset.set));
   if(t.dataset.pre){pushHist();SORT=null;S.h=t.dataset.pre==='brief'?briefSet():'';return render()}
   if(t.dataset.col){const a=S.h?S.h.split('|'):[],i=a.indexOf(t.dataset.col);i<0?a.push(t.dataset.col):a.splice(i,1);pushHist();SORT=null;S.h=a.join('|');return render()}
+  if(t.dataset.sec){SECO.has(t.dataset.sec)?SECO.delete(t.dataset.sec):SECO.add(t.dataset.sec);return render()}
   if(t.dataset.clr){const [key,ids]=t.dataset.clr.split(':'),rm=ids.split(','),a=(S[key]?S[key].split(','):[]).filter(x=>!rm.includes(x));pushHist();SORT=null;S[key]=a.join(',');return render()}
   if(t.dataset.tog){const [key,id]=t.dataset.tog.split(':'),a=S[key]?S[key].split(','):[];const i=a.indexOf(id);i<0?a.push(id):a.splice(i,1);pushHist();if(key==='lp')SORT=null;S[key]=a.join(',');return render()}
   if(t.dataset.sort){const i=+t.dataset.sort;SORT=SORT&&SORT.i===i?(SORT.d===-1?{i,d:1}:null):{i,d:-1};const tw=document.getElementById('tw'),sl=tw?tw.scrollLeft:0;render();const n2=document.getElementById('tw');if(n2)n2.scrollLeft=sl;return}
