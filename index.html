@@ -567,7 +567,7 @@ const J=o=>`data-set='${JSON.stringify(o)}'`;
 function dev(v,d,bad,unit=''){if(v==null||!isFinite(v))return '—';const t=sg(v,d)+unit;return bad?`<span class="bad">${v>0?'▲':'▼'} ${t}</span>`:`<b class="ok">${t}</b>`}
 function pdev(v,bad){if(v==null)return '—';return bad?`<span class="bad">▼ ${pct(v)}</span>`:`<b class="ok">${pct(v)}</b>`}
 
-const DEF={d:'home',g:'all',sm:'',h:'',cp:'',f:'WS',p:'week',lp:'month',k:'',r:'kust',t:'all',m:'rentShare,cost,rev,pipeF',km:'rev,rentShare,nb,capexStore,capexM2'};
+const DEF={d:'home',g:'all',sm:'',h:'',cp:'',f:'WS',p:'week',lp:'month',k:'',r:'kust',t:'all',m:'opn,speed,rentShare,cost,rev,pipeF',km:'rev,rentShare,nb,capexStore,capexM2'};
 let S={...DEF},SORT=null;
 const FN={WS:'White Store',DS:'Dark Store'};
 const DASH=[['lrk','ЛРК','Панель ЛРК'],['search','Поиск','Панель лидера поиска'],['rent','Аренда','Панель лидера аренды'],['build','Стройка','Панель лидера стройки']];
@@ -680,7 +680,7 @@ function vHome(){const ws={fs:['WS'],ks:null,type:'all'},both={fs:['WS','DS'],ks
   return `<div class="homehd">${LOGO(64)}<div style="flex:1">${header('Рабочие панели развития','Выберите рабочую панель','910-я неделя')}</div></div>`+`<div class="cards">${DASH.map(([id,,full])=>`<button class="card" ${J({d:id})}><div class="cardhd"><h3>${full}</h3></div><p><b>Обещание:</b> ${PROMISE[id][1]}</p><div class="k3">${K[id].map(([v,l,t,bad])=>`<div><b>${v}</b><span>${l}</span><em class="${bad?'bad':''}">${bad?'● ':''}${t}</em></div>`).join('')}</div><div class="lv3">${LV[id]}</div></button>`).join('')}</div>`}
 
 /* ---------- ЛРК ---------- */
-const MNET=[[['Новые открытия',[['signed','подписано'],['toBuild','передано в стройку'],['pipeF','пайплайн (прогноз к цели)'],['smr','срок СМР'],['noAho','не передано в АХО'],['nbShare','доля новичков, %'],
+const MNET=[[['Новые открытия',[['opn','открыто: факт, цель, прогноз (шт и %)'],['speed','скорость открытия'],['signed','подписано'],['toBuild','передано в стройку'],['pipeF','пайплайн (прогноз к цели)'],['smr','срок СМР'],['noAho','не передано в АХО'],['nbShare','доля новичков, %'],
    ['#','Инвестиции'],['roi','ROI и окупаемость'],['budget','% израсходованного бюджета'],['cost','стоимость открытия (CAPEX)'],['capexM2','CAPEX за м²'],['smrM2','СМР за м²']]]],
  [['Эффективность',[['rentShare','доля аренды'],['rentNew','доля аренды новых открытий'],['opt','оптимизация аренды'],['prol','пролонгации'],['subl','субаренда: сдано, %'],['sublDev','субаренда: откл. от 97%']]],
   ['Расширения',[['expT','план / факт, % выполнения цели'],['expM2','CAPEX за м², откл. от цели'],['expCapex','CAPEX на 1 магазин'],['expRev','прирост выручки']]],
@@ -722,7 +722,7 @@ function metricsBlock(defs,key,hint){const on=S[key].split(',').filter(Boolean),
   const clr=(ids,what)=>{const a=ids.filter(id=>on.includes(id));return a.length?`<button class="mclr" data-clr="${key}:${a.join(',')}" title="Убрать из таблицы метрики раздела «${what}»">сбросить</button>`:''};
   const grp=([g,items])=>{const i=items.findIndex(x=>x[0]==='#'),main=(i<0?items:items.slice(0,i)).map(x=>x[0]),sub=i<0?[]:items.slice(i+1).map(x=>x[0]);
     return `<div class="mg"><span>${g}</span>${clr(main,g)}</div>${items.length?'':'<div class="msoon">будет дополнено позже</div>'}${items.map(([id,l])=>id==='#'?`<div class="msub"><span>${l}</span>${clr(sub,l)}</div>`:`<button class="ck ${on.includes(id)?'on':''}" data-tog="${key}:${id}"><i>${on.includes(id)?'✓':''}</i><span>${l}</span></button>`).join('')}`};
-  return `<div class="mt"><div class="mth"><h3>Метрики в таблице</h3><span class="mbt"><button class="mall" ${J({[key]:DEF[key]})}${S[key]===DEF[key]?' disabled':''} title="Вернуть стартовый набор метрик">Стартовый набор</button><button class="mall" data-clr="${key}:${all.join(',')}"${anyOn?'':' disabled'} title="Убрать все добавленные метрики — останутся только открытия и скорость">Сбросить все</button></span></div><div class="hint">${hint?hint+' · ':''}открытия и скорость показаны всегда, остальное добавляется галочками</div><div class="cols">${defs.map(col=>`<div>${col.map(grp).join('')}</div>`).join('')}</div></div>`}
+  return `<div class="mt"><div class="mth"><h3>Метрики в таблице</h3><span class="mbt"><button class="mall" ${J({[key]:DEF[key]})}${S[key]===DEF[key]?' disabled':''} title="Вернуть стартовый набор метрик">Стартовый набор</button><button class="mall" ${J({[key]:key==='m'?'opn,speed':''})}${S[key]===(key==='m'?'opn,speed':'')?' disabled':''} title="Убрать все добавленные метрики${key==='m'?' — останутся только открытия и скорость':''}">Сбросить все</button></span></div><div class="hint">${hint?hint+' · ':''}отмеченное галочками показано в таблице</div><div class="cols">${defs.map(col=>`<div>${col.map(grp).join('')}</div>`).join('')}</div></div>`}
 function avBars(ks,onW,onD,terr){const cO='#5fa56e',cW='#878e96',dO='#2f7a40',dW='#565d65',w=446,h=146,base=h-22,ph=base-36,bw=30,L=['до 10 мин','до 20 мин','до 30 мин','до 1 час'];
   const pair=(key,i)=>({v:avK(ks,key,[10],i),g:avK(ks,key,[10],i)-avK(ks,key,[0],i)}),G=L.map((l,i)=>[pair('on',i),i<3?pair('off',i):null]),gw=w/4;
   const nW=cnt(O({fs:['WS'],ks,type:'all'}),'dO',RNG.year),nD=cnt(O({fs:['DS'],ks,type:'all'}),'dO',RNG.year);
@@ -770,9 +770,9 @@ function vLrk(){const b=baseSel(),kv=!!S.k,L=O(b),both=b,LB=L,onW=b.fs.includes(
     const pg=p=>({t:PN[p]+', открытия',cols:[{h:['','факт'],v:r=>cnt(r.L,'dO',RNG[p])},{h:['','цель'],v:r=>tg(r.s,ot(p))},{h:['прогн.','шт'],v:r=>cnt(r.L,'dO',FULL[p])},
       {h:['прогн.','%'],v:r=>pc(cnt(r.L,'dO',FULL[p]),tg(r.s,ot(p))),f:pct}]});
     const multi=LPS().length>1,PSH={month:'ноябрь',quarter:'IV квартал',year:'2026 год'},tag=(g,q)=>multi?{...g,t2:PSH[q]}:g;
-    const groups=[...LPS().map(pg),
-     ...LPS().map(q=>{const nsp=mean(opened(O({...b,ks:null}),RNG[q]),o=>o.sp8);return tag({t:'Скорость, дн',cols:[{h:['','средн.'],v:r=>mean(opened(r.L,RNG[q]),o=>o.sp8)},{h:['','откл.'],v:r=>{const o=opened(r.L,RNG[q]);return o.length?Math.round(mean(o,x=>x.sp8))-Math.round(tgtOf(o,'speed')):null},f:v=>sg(v),red:(v,r)=>v>0&&nsp!=null&&mean(opened(r.L,RNG[q]),x=>x.sp8)>nsp*1.1}]},q)}),
-     ...S.m.split(',').filter(id=>id!=='#'&&avOk(id)&&MNET.flat().some(g=>g[1].some(x=>x[0]===id))).flatMap(id=>{const gs=LPS().map(q=>[netMetric(id,q),q]);return multi&&gs[0][0].cols.length===1?[{t:gs[0][0].t,cols:gs.map(([g,q])=>({...g.cols[0],h:[{month:'ноябрь',quarter:'IV кв.',year:'год'}[q],g.cols[0].h.filter(Boolean).join(' ').replace(/^за период$/,'шт')]}))}]:gs.map(([g,q])=>tag(g,q))})];
+    const spdG=()=>LPS().map(q=>{const nsp=mean(opened(O({...b,ks:null}),RNG[q]),o=>o.sp8);return tag({t:'Скорость, дн',cols:[{h:['','средн.'],v:r=>mean(opened(r.L,RNG[q]),o=>o.sp8)},{h:['','откл.'],v:r=>{const o=opened(r.L,RNG[q]);return o.length?Math.round(mean(o,x=>x.sp8))-Math.round(tgtOf(o,'speed')):null},f:v=>sg(v),red:(v,r)=>v>0&&nsp!=null&&mean(opened(r.L,RNG[q]),x=>x.sp8)>nsp*1.1}]},q)});
+    const groups=[
+     ...S.m.split(',').filter(id=>id!=='#'&&avOk(id)&&MNET.flat().some(g=>g[1].some(x=>x[0]===id))).flatMap(id=>{if(id==='opn')return LPS().map(pg);if(id==='speed')return spdG();const gs=LPS().map(q=>[netMetric(id,q),q]);return multi&&gs[0][0].cols.length===1?[{t:gs[0][0].t,cols:gs.map(([g,q])=>({...g.cols[0],h:[{month:'ноябрь',quarter:'IV кв.',year:'год'}[q],g.cols[0].h.filter(Boolean).join(' ').replace(/^за период$/,'шт')]}))}]:gs.map(([g,q])=>tag(g,q))})];
     tbl=table({fixed:[kustCol],groups,rows:kRows(b),totals:tots(b),minCol:60,rowClick:r=>({k:KID(r.k)})})}
   else{const on=S.km.split(','),sv=(fo,fl)=>r=>r.o?fo(r.o):r.L.length?fl(r.L):null,rows=op.slice().sort((a,c)=>a.dO-c.dO).map((o,i)=>({o,i:i+1}));
     const g=[{t:'Открытие',sm:1,cols:[{h:['','дата'],v:r=>r.o?dm(r.o.dO):r.L.length+' шт.'}]},
@@ -934,7 +934,7 @@ function save(){const q=new URLSearchParams();for(const k in DEF)if(S[k]!==DEF[k
 function norm(){if(!['home','lrk','search','rent','build'].includes(S.d))S.d='home';
   if(S.d!=='lrk'&&S.f==='ALL')S.f='WS';if(!['ALL','WS','DS'].includes(S.f))S.f='WS';if(!['all','kust','reg'].includes(S.g))S.g='all';if((S.d==='rent'||S.d==='build')&&S.p==='year')S.p='week';S.lp=['month','quarter','year'].filter(x=>String(S.lp).split(',').includes(x)).join(',')||'month';
   if(!/^(\d\d)(,\d\d)*$/.test(S.k)||S.k.split(',').some(x=>+x<1||+x>KN))S.k='';
-  if(S.d==='lrk'){if(S.k.includes(','))S.k=S.k.split(',')[0];if(S.k&&S.f==='ALL')S.f='WS'}}
+  if(S.d==='lrk'){S.h='';if(S.k.includes(','))S.k=S.k.split(',')[0];if(S.k&&S.f==='ALL')S.f='WS'}}
 function fit(){const sc=Math.min(1.3,window.innerWidth/1920);app.style.transform=`scale(${sc})`;
   const tw=document.getElementById('tw');if(tw){tw.style.maxHeight='none';const top=tw.getBoundingClientRect().top;tw.style.maxHeight=Math.max(270,(window.innerHeight-top-window.scrollY*0)/sc-30)+'px'}
   scaler.style.height=app.offsetHeight*sc+'px'}
