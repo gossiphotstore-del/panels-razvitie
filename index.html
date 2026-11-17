@@ -572,7 +572,7 @@ const J=o=>`data-set='${JSON.stringify(o)}'`;
 function dev(v,d,bad,unit=''){if(v==null||!isFinite(v))return '—';const t=sg(v,d)+unit;return bad?`<span class="bad">${v>0?'▲':'▼'} ${t}</span>`:`<b class="ok">${t}</b>`}
 function pdev(v,bad){if(v==null)return '—';return bad?`<span class="bad">▼ ${pct(v)}</span>`:`<b class="ok">${pct(v)}</b>`}
 
-const DEF={d:'home',g:'all',sm:'',h:'',cp:'',f:'WS',p:'week',lp:'month',k:'',r:'kust',t:'all',m:'opn,speed,rentShare,cost',km:'rev,rentShare,nb,capexStore,capexM2'};
+const DEF={d:'home',g:'all',sm:'',h:'',cp:'',f:'WS',p:'week',lp:'month',k:'',r:'kust',t:'all',m:'opn,speed,rentShare,cost,rev',km:'rev,rentShare,nb,capexStore,capexM2'};
 let S={...DEF},SORT=null;
 const FN={WS:'White Store',DS:'Dark Store'};
 const DASH=[['lrk','ЛРК','Панель ЛРК'],['search','Поиск','Панель лидера поиска'],['rent','Аренда','Панель лидера аренды'],['build','Стройка','Панель лидера стройки']];
