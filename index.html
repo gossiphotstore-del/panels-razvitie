@@ -212,6 +212,12 @@ table.t{border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%;
 .mt .hint{font-size:13px;color:#566459}
 .mt .cols{display:flex;gap:10px}
 .mt .cols>div{flex:1;min-width:0}
+.mth{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mall{font:600 12px Inter,sans-serif;color:#566459;background:#f4f5f2;border:1px solid #dcdfd8;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
+.mall:hover{background:#eceee9}
+.mall:disabled{opacity:.45;cursor:default}
+.mclr{font:600 11px Inter,sans-serif;text-transform:none;letter-spacing:0;color:#a8554a;background:none;border:0;padding:0;cursor:pointer;text-decoration:underline dotted}
+.mg,.msub{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
 .msub{font-size:12px;font-weight:700;color:#3f9352;margin:10px 0 4px;padding-top:8px;border-top:1px dashed #dcdfd8}
 .msoon{font-size:13px;color:#8a938c;font-style:italic;border:1px dashed #dcdfd8;border-radius:8px;padding:8px 10px}
 .mg{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#566459;margin:11px 0 5px}
@@ -701,8 +707,11 @@ function netMetric(id){const p=S.lp,y=RNG[p],mo=PMON(p),ok=p==='year'?'ytd':p,op
    case 'smr':return{t:'✓ Срок СМР',sm:1,cols:[{h:['','дн'],v:r=>mean(opp(r),o=>o.s[6])}]};
    case 'noAho':return{t:'✓ Не в АХО',sm:1,cols:[{h:['не пере-','дано'],v:r=>opp(r).filter(o=>!o.aho).length}]};
    case 'nbShare':return{t:'✓ Новички',sm:1,cols:[{h:['доля,','%'],v:r=>mean(opp(r),o=>o.nbSh)}]}}}
-function metricsBlock(defs,key,hint){const on=S[key].split(',');
-  return `<div class="mt"><h3>Метрики в таблице</h3>${hint?`<div class="hint">${hint}</div>`:''}<div class="pick">${colPicker()}</div><div class="cols">${defs.map(col=>`<div>${col.map(([g,items])=>`<div class="mg">${g}</div>${items.length?'':'<div class="msoon">будет дополнено позже</div>'}${items.map(([id,l])=>id==='#'?`<div class="msub">${l}</div>`:`<button class="ck ${on.includes(id)?'on':''}" data-tog="${key}:${id}"><i>${on.includes(id)?'✓':''}</i><span>${l}</span></button>`).join('')}`).join('')}</div>`).join('')}</div></div>`}
+function metricsBlock(defs,key,hint){const on=S[key].split(',').filter(Boolean),all=defs.flat().flatMap(g=>g[1]).map(x=>x[0]).filter(x=>x!=='#'),anyOn=all.some(id=>on.includes(id));
+  const clr=(ids,what)=>{const a=ids.filter(id=>on.includes(id));return a.length?`<button class="mclr" data-clr="${key}:${a.join(',')}" title="Убрать из таблицы метрики раздела «${what}»">сбросить</button>`:''};
+  const grp=([g,items])=>{const i=items.findIndex(x=>x[0]==='#'),main=(i<0?items:items.slice(0,i)).map(x=>x[0]),sub=i<0?[]:items.slice(i+1).map(x=>x[0]);
+    return `<div class="mg"><span>${g}</span>${clr(main,g)}</div>${items.length?'':'<div class="msoon">будет дополнено позже</div>'}${items.map(([id,l])=>id==='#'?`<div class="msub"><span>${l}</span>${clr(sub,l)}</div>`:`<button class="ck ${on.includes(id)?'on':''}" data-tog="${key}:${id}"><i>${on.includes(id)?'✓':''}</i><span>${l}</span></button>`).join('')}`};
+  return `<div class="mt"><div class="mth"><h3>Метрики в таблице</h3><button class="mall" data-clr="${key}:${all.join(',')}"${anyOn?'':' disabled'} title="Убрать все добавленные метрики — останутся только базовые колонки">Сбросить все · оставить базовые</button></div>${hint?`<div class="hint">${hint}</div>`:''}<div class="pick">${colPicker()}</div><div class="cols">${defs.map(col=>`<div>${col.map(grp).join('')}</div>`).join('')}</div></div>`}
 function avBars(ks,terr){const cO='#5fa56e',cW='#878e96',dO='#2f7a40',dW='#565d65',w=446,h=146,base=h-22,ph=base-36,bw=30,L=['до 10 мин','до 20 мин','до 30 мин','до 1 час'];
   const pair=(key,i)=>({v:avK(ks,key,[10],i),g:avK(ks,key,[10],i)-avK(ks,key,[0],i)}),G=L.map((l,i)=>[pair('on',i),i<3?pair('off',i):null]),gw=w/4;
   const nW=cnt(O({fs:['WS'],ks,type:'all'}),'dO',RNG.year),nD=cnt(O({fs:['DS'],ks,type:'all'}),'dO',RNG.year);
@@ -927,7 +936,7 @@ function apply(o){
   if('d' in o){if(o.d!==S.d){STORE[S.d]=snap();S={...(STORE[o.d]||fresh(o.d)),d:o.d};SORT=null}return render()}
   if(Object.keys(o).every(k=>S[k]===o[k])&&!('g' in o&&S.k))return;
   SORT=null;pushHist();Object.assign(S,o);if('g' in o&&!('k' in o))S.k='';render()}
-document.addEventListener('click',e=>{const t=e.target.closest('[data-set],[data-dd],[data-tog],[data-col],[data-pre],[data-sort],[data-reset],[data-undo]');
+document.addEventListener('click',e=>{const t=e.target.closest('[data-set],[data-dd],[data-tog],[data-clr],[data-col],[data-pre],[data-sort],[data-reset],[data-undo]');
   document.querySelectorAll('details.how[open]').forEach(x=>{if(!x.contains(e.target))x.open=false});
   document.querySelectorAll('.ddl').forEach(x=>{if(!t||!t.hasAttribute('data-dd')||x.previousElementSibling!==t)x.hidden=true});
   if(!t)return;
@@ -935,6 +944,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-set],[data
   if(t.dataset.set)return apply(JSON.parse(t.dataset.set));
   if(t.dataset.pre){pushHist();SORT=null;S.h=t.dataset.pre==='brief'?briefSet():'';return render()}
   if(t.dataset.col){const a=S.h?S.h.split('|'):[],i=a.indexOf(t.dataset.col);i<0?a.push(t.dataset.col):a.splice(i,1);pushHist();SORT=null;S.h=a.join('|');return render()}
+  if(t.dataset.clr){const [key,ids]=t.dataset.clr.split(':'),rm=ids.split(','),a=(S[key]?S[key].split(','):[]).filter(x=>!rm.includes(x));pushHist();SORT=null;S[key]=a.join(',');return render()}
   if(t.dataset.tog){const [key,id]=t.dataset.tog.split(':'),a=S[key]?S[key].split(','):[];const i=a.indexOf(id);i<0?a.push(id):a.splice(i,1);pushHist();S[key]=a.join(',');return render()}
   if(t.dataset.sort){const i=+t.dataset.sort;SORT=SORT&&SORT.i===i?(SORT.d===-1?{i,d:1}:null):{i,d:-1};const tw=document.getElementById('tw'),sl=tw?tw.scrollLeft:0;render();const n2=document.getElementById('tw');if(n2)n2.scrollLeft=sl;return}
   if(t.hasAttribute('data-reset')){const d=S.d;if(FK.some(k=>S[k]!==DEF[k]))pushHist();try{localStorage.removeItem('vv_table3_'+d)}catch(e){}S={...fresh(d,true),d};SORT=null;return render()}
