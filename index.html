@@ -813,7 +813,7 @@ function vSearch(){const b=baseSel(),L=O(b),c=CFG[S.f],T=c.T,p=S.p,op=opened(L);
     const yv=cnt(L,key,RNG.year),t=tg(b,tf),pr=pc(yv,t);return tile(nm,cnt(L,key,RNG[p]),PL,`с нач. года <b>${yv}</b> · цель ${n(t)}`,`вып. цели ${pdev(pr,pr<100)}`,'big',pr,pr<100)}).join('');
   const sp=mean(op,o=>o.sp8),sr=mean(op,o=>o.sp9),pv=pipe(L,RNG.year),pt=tg(b,f=>TK[f].pipe.year),pf=pc(pipe(L,FULL.year),pt),rev=mean(op,o=>o.rev);
   const band=`<div class="band"><div><div class="bt mn">Скорость открытия 2026</div><div class="bv mn g">${n(sp)}<small> дн</small></div>
-    <div class="bl">до открытия · цель <b>${T.speed}</b> · ${sp==null?'—':dev(Math.round(sp)-T.speed,0,Math.round(sp)>T.speed,' дн')}</div><div class="bl">с выходом на выручку <b>${n(sr)}</b> · цель ${T.rto} · ${sr==null?'—':dev(Math.round(sr)-T.rto,0,Math.round(sr)>T.rto)}</div></div>
+    <div class="bl">до открытия · цель <b>${T.speed}</b> · ${sp==null?'—':dev(Math.round(sp)-T.speed,0,Math.round(sp)>T.speed,' дн')}</div><div class="bl">до выручки <b>${n(sr)}</b> · цель ${T.rto} · ${sr==null?'—':dev(Math.round(sr)-T.rto,0,Math.round(sr)>T.rto)}</div></div>
    <div><div class="bt mn">Пайплайн 2026 года</div><div class="bv mn">${n(pv)}<small> шт</small></div><div class="bl">цель <b>${n(pt)}</b> · ${pdev(pc(pv,pt),pv<pt)}</div><div class="bl">прогноз на год ${pdev(pf,pf<100)}</div></div>
    <div><div class="bt mn">Выручка новых открытий</div><div class="bv mn">${n(rev)}<small> тыс. ₽/день</small></div><div class="bl">средняя на магазин</div><div class="bl">выполнение цели ${pdev(pc(rev,T.rev),rev<T.rev)} · цель ${T.rev}</div></div></div>`;
   const cF='#6aab78',cT='#b9c6d2',G=STG.map((lab,i)=>{const v=mean(op,o=>o.s[i]),t=c.stT[i];
