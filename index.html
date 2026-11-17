@@ -192,13 +192,17 @@ table.t{border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%;
 .ctl .ddb{padding:4px 11px}
 .lch{background:#fff;border:1px solid #e1e2de;border-radius:14px;padding:8px 16px}
 .lch .ct{font-size:18px}
-.av2{display:flex;gap:14px;margin-top:4px}
-.avc{flex:1;min-width:0}
-.avh b{display:block;white-space:nowrap;font-size:15px;border-left:4px solid;padding-left:7px;margin-right:6px}
-.avh span{display:block;margin-top:2px;font-size:12px;color:#566459;white-space:nowrap}
-.avv{font-size:13px;margin:3px 0 0;white-space:nowrap}
-.avv b.mn{font-size:20px}
+.avc{margin-top:8px}
+.avh{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+.avh b{font-size:15px;border-left:4px solid;padding-left:7px}
+.avh span{font-size:12px;color:#566459}
+.avv{font-size:13px;margin:3px 0 4px;white-space:nowrap}
+.avv b.mn{font-size:19px}
 .avv i{font-style:normal;color:#566459}
+.avb{display:flex;height:22px;border-radius:6px;overflow:hidden}
+.avb div{font:600 12px/22px Inter,sans-serif;text-align:center;white-space:nowrap}
+.avl{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:11.5px;color:#566459;margin:4px 0 2px}
+.avl i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
 .lch .row{display:flex;align-items:center;gap:14px;font-size:13px;color:#566459;margin-top:1px;white-space:nowrap}
 .lch .row b{font-size:16px;color:#1f2a22;border-left:4px solid #2f8a3e;padding-left:7px;margin-right:6px}
 .lch .row b.dk{border-left-color:#5f6770}
@@ -510,10 +514,14 @@ const inBuild=L=>L.filter(o=>o.dB<=REP&&o.dO>REP);
 const smrM2=L=>L.length?sum(L,o=>o.capex*o.smrSh)*1000/sum(L,o=>o.area):null;   // стоимость СМР за м² общей площади, тыс. ₽
 const m2of=(L,key='area')=>L.length?sum(L,o=>o.capex)*1000/sum(L,o=>o[key]):null;
 const pc=(a,b)=>b?a/b*100:null;
-/* Доступность для клиента (демо): офлайн — доля жителей территории, у которых магазин ВС в 10 минутах пешком; онлайн — доля адресов, куда ДС доставляет за 20–30 минут */
-const AVT={off:68,on:76},AVL=(()=>{const r=mulberry(5151),ser=(b,g)=>[...Array(11)].map((_,m)=>b+g*m/10+(r()-.5)*.8);return [...Array(KN)].map((_,k)=>({off:ser((isReg(k)?48:58)+r()*14,2+r()*3),on:ser((isReg(k)?55:66)+r()*14,2+r()*4)}))})();
-{const r=mulberry(6262);for(const o of OBJ)o.av=Math.min(97,AVL[o.k][o.f==='WS'?'off':'on'][10]+(r()-.5)*12)}
-const avK=(ks,key,ms)=>{let t=0,c=0;for(let k=0;k<KN;k++)if(!ks||ks.has(k))for(const m of ms){t+=AVL[k][key][m];c++}return c?t/c:null};
+/* Доступность для покупателя (демо, по файлу метрик): офлайн — доли покупателей с пешей доступностью магазина ВС за 10/20/30 минут;
+   онлайн — доли покупателей с расчётным временем доступности онлайн-заказа из ДС 10/20/30 минут/час. Значения накопительные («до N минут») */
+const AVS={off:['до 10 мин','до 20 мин','до 30 мин'],on:['до 10 мин','до 20 мин','до 30 мин','до часа']};
+const AVL=(()=>{const r=mulberry(5151),ser=(b,g)=>[...Array(11)].map((_,m)=>b+g*m/10+(r()-.5)*.8);return [...Array(KN)].map((_,k)=>({off:ser((isReg(k)?62:72)+r()*14,2+r()*3),on:ser((isReg(k)?55:66)+r()*14,2+r()*4),fo:[.52+r()*.12,.8+r()*.1,1],fn:[.1+r()*.1,.52+r()*.16,1,0],hr:.55+r()*.3}))})();
+const avV=(k,key,m,i)=>{const a=AVL[k],v=a[key][m];return key==='on'&&i===3?v+(100-v)*a.hr:v*(key==='off'?a.fo:a.fn)[i]};
+{const r=mulberry(6262);for(const o of OBJ)o.av=Math.min(98,AVL[o.k][o.f==='WS'?'off':'on'][10]+(r()-.5)*12)}
+const avK=(ks,key,ms,i=2)=>{let t=0,c=0;for(let k=0;k<KN;k++)if(!ks||ks.has(k))for(const m of ms){t+=avV(k,key,m,i);c++}return c?t/c:null};
+const avG=(ks,key,ms)=>avK(ks,key,[ms[ms.length-1]])-avK(ks,key,[0]);   // рост доли доступности (до 30 минут) с января, п.п.
 const eachK=(s,fn)=>{for(const f of s.fs)for(let k=0;k<KN;k++)if(!s.ks||s.ks.has(k))fn(RENT[f].K[k],f,k)};
 function rentAgg(s,months=[10]){let w=0,sh=0,tS=0,vr=0,tV=0,sa=0,sr=0,n=0,st=0;
   eachK(s,(x,f)=>{for(const m of months){w+=x.w;sh+=x.w*x.shM[m];vr+=x.w*x.vrM[m];tS+=x.w*x.tSh;tV+=x.w*CFG[f].T.vr}sa+=x.subA;sr+=x.subA*x.sub;n+=x.n;st+=x.n*x.short});
@@ -661,9 +669,9 @@ function vHome(){const ws={fs:['WS'],ks:null,type:'all'},both={fs:['WS','DS'],ks
 const MNET=[[['Новые открытия',[['signed','подписано'],['toBuild','передано в стройку'],['pipeF','пайплайн (прогноз к цели)'],['expT','расширения к цели'],['smr','срок СМР'],['noAho','не передано в АХО'],['nbShare','доля новичков, %'],
    ['#','Инвестиции'],['roi','ROI и окупаемость'],['budget','% израсходованного бюджета'],['cost','стоимость открытия (CAPEX)'],['capexM2','CAPEX за м²'],['smrM2','СМР за м²'],['expCapex','CAPEX расширения на 1 магазин']]]],
  [['Эффективность',[['rentShare','доля аренды'],['rentNew','доля аренды новых открытий'],['opt','оптимизация аренды'],['prol','пролонгации'],['subl','субаренда: сдано, %'],['sublDev','субаренда: откл. от 97%']]],
-  ['Выручка',[['rev','выручка новых открытий'],['expRev','прирост выручки расширений']]],['Клиентские метрики',[['availOff','доступность офлайн (ВС)'],['availOn','доступность онлайн (ДС): доставка за 20–30 мин']]]]];
+  ['Выручка',[['rev','выручка новых открытий'],['expRev','прирост выручки расширений']]],['Клиентские метрики',[['availOff','пешая доступность ВС: 10 / 20 / 30 мин'],['availOn','доступность онлайн-заказа ДС: 10 / 20 / 30 мин / час']]]]];
 const MKUST=[[['Новые открытия',[['retail','передан в розницу'],['nb','новички, чел.'],['nbShare','доля новичков, %'],['#','Инвестиции'],['roi','ROI, %'],['capexStore','CAPEX на магазин, млн ₽'],['capexM2','CAPEX за м², тыс. ₽']]]],
- [['Эффективность',[['rentShare','доля аренды'],['varPart','доля аренды: переменная часть'],['lease','остаточный срок договора аренды'],['free','свободная площадь, %']]],['Выручка',[['rev','выручка магазина']]],['Клиентские метрики',[['availOff','доступность офлайн (ВС)'],['availOn','доступность онлайн (ДС): доставка за 20–30 мин']]]]];
+ [['Эффективность',[['rentShare','доля аренды'],['varPart','доля аренды: переменная часть'],['lease','остаточный срок договора аренды'],['free','свободная площадь, %']]],['Выручка',[['rev','выручка магазина']]],['Клиентские метрики',[['availOff','пешая доступность ВС: 10 / 20 / 30 мин'],['availOn','доступность онлайн-заказа ДС: 10 / 20 / 30 мин / час']]]]];
 const avOk=id=>id==='availOff'?S.f!=='DS':id==='availOn'?S.f!=='WS':true,avDefs=d=>d.map(c=>c.map(([g,it])=>[g,it.filter(([id])=>avOk(id))]));
 /* ROI (демо): годовая операционная прибыль (условно 6,2% выручки) к вложениям в открытие */
 const ROIM=.062,roiL=l=>{const c=sum(l,o=>o.capex);return l.length&&c?sum(l,o=>o.rev)*365*ROIM/(c*1000)*100:null};
@@ -671,8 +679,8 @@ function netMetric(id){const p=S.lp,y=RNG[p],mo=PMON(p),ok=p==='year'?'ytd':p,op
   switch(id){
    case 'rev':return{t:'✓ Выручка новых открытий',cols:[{h:['выручка','в день'],v:r=>mean(opp(r),o=>o.rev)},{h:['выручка','на м²'],d:1,v:r=>{const o=opp(r);return o.length?sum(o,x=>x.rev*30)/sum(o,x=>x.area):null}},
        {h:['откл.','от цели'],v:r=>{const o=opp(r);return o.length?(mean(o,x=>x.rev)/tgtOf(o,'rev')-1)*100:null},f:spct,red:v=>v<-20}]};
-   case 'availOff':return{t:'✓ Доступн. офлайн',cols:[{h:['жителей в','10 мин, %'],d:1,v:r=>avK(r.s.ks,'off',mo)},{h:['откл.','п.п.'],v:r=>avK(r.s.ks,'off',mo)-AVT.off,f:v=>sg(v,1),red:v=>v<-5}]};
-   case 'availOn':return{t:'✓ Доступн. онлайн',cols:[{h:['за 20–30','мин, %'],d:1,v:r=>avK(r.s.ks,'on',mo)},{h:['откл.','п.п.'],v:r=>avK(r.s.ks,'on',mo)-AVT.on,f:v=>sg(v,1),red:v=>v<-5}]};
+   case 'availOff':return{t:'✓ Пешая доступность ВС, %',cols:[...AVS.off.map((l,i)=>({h:[l.slice(0,5),'мин, %'],d:1,b:i===2,v:r=>avK(r.s.ks,'off',mo,i)})),{h:['рост','с янв., п.п.'],v:r=>avG(r.s.ks,'off',mo),f:v=>sg(v,1)}]};
+   case 'availOn':return{t:'✓ Онлайн-доступность ДС, %',cols:[...AVS.on.map((l,i)=>({h:i===3?['до','часа, %']:[l.slice(0,5),'мин, %'],d:1,b:i===2,v:r=>avK(r.s.ks,'on',mo,i)})),{h:['рост','с янв., п.п.'],v:r=>avG(r.s.ks,'on',mo),f:v=>sg(v,1)}]};
    case 'roi':return{t:'✓ ROI',cols:[{h:['ROI,','% год.'],d:1,v:r=>roiL(opp(r))},{h:['окуп.,','мес'],v:r=>{const v=roiL(opp(r));return v?1200/v:null}}]};
    case 'rentShare':return{t:'✓ Доля аренды',cols:[{h:['','доля, %'],d:1,v:r=>rentAgg(r.s,mo).sh},{h:['откл.','п.п.'],v:r=>{const a=rentAgg(r.s,mo);return a.sh-a.tSh},f:v=>sg(v,1),red:v=>v>.5}]};
    case 'rentNew':return{t:'✓ Аренда новых',sm:1,cols:[{h:['доля','нов., %'],d:1,v:r=>rentNew(r.L)}]};
@@ -696,12 +704,11 @@ function netMetric(id){const p=S.lp,y=RNG[p],mo=PMON(p),ok=p==='year'?'ytd':p,op
    case 'nbShare':return{t:'✓ Новички',sm:1,cols:[{h:['доля,','%'],v:r=>mean(opp(r),o=>o.nbSh)}]}}}
 function metricsBlock(defs,key,hint){const on=S[key].split(',');
   return `<div class="mt"><h3>Метрики в таблице</h3>${hint?`<div class="hint">${hint}</div>`:''}<div class="pick">${colPicker()}</div><div class="cols">${defs.map(col=>`<div>${col.map(([g,items])=>`<div class="mg">${g}</div>${items.length?'':'<div class="msoon">будет дополнено позже</div>'}${items.map(([id,l])=>id==='#'?`<div class="msub">${l}</div>`:`<button class="ck ${on.includes(id)?'on':''}" data-tog="${key}:${id}"><i>${on.includes(id)?'✓':''}</i><span>${l}</span></button>`).join('')}`).join('')}</div>`).join('')}</div></div>`}
-function avChart(key,ks,title,sub,col){const v=[...Array(11)].map((_,m)=>avK(ks,key,[m])),T=AVT[key],w=216,h=92,x0=6,x1=w-34,y0=10,y1=h-18;
-  const lo=Math.floor(Math.min(...v,T)-2),hi=Math.ceil(Math.max(...v,T)+2),X=m=>x0+(x1-x0)*m/10,Y=a=>y1-(y1-y0)*(a-lo)/(hi-lo),last=v[10],bad=last<T;
-  return `<div class="avc"><div class="avh"><b style="border-left-color:${col}">${title}</b><span>${sub}</span></div><div class="avv"><b class="mn">${n(last,1)}%</b> <i>цель ${T}% ·</i> ${dev(last-T,1,bad,' п.п.')}</div>
-   <svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"><line x1="${x0}" x2="${x1}" y1="${Y(T)}" y2="${Y(T)}" stroke="#b9bdb7" stroke-dasharray="4 3"/><text x="${x1+4}" y="${Y(T)+4}" font-size="10" fill="#7b837d">цель</text>
-   <polyline fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" points="${v.map((a,m)=>X(m).toFixed(1)+','+Y(a).toFixed(1)).join(' ')}"/>${v.map((a,m)=>`<circle cx="${X(m).toFixed(1)}" cy="${Y(a).toFixed(1)}" r="${m===10?3.4:1.8}" fill="${col}"><title>${['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь'][m]}: ${n(a,1)}%</title></circle>`).join('')}
-   ${[[0,'янв'],[3,'апр'],[6,'июл'],[10,'ноя']].map(([m,l])=>`<text x="${X(m)}" y="${h-4}" font-size="10" fill="#7b837d" text-anchor="${m?m===10?'end':'middle':'start'}">${l}</text>`).join('')}</svg></div>`}
+function avChart(key,ks,title,sub,cols){const L=AVS[key],c=L.map((_,i)=>avK(ks,key,[10],i)),g=avG(ks,key,[10]),seg=[...c.map((v,i)=>v-(i?c[i-1]:0)),100-c[c.length-1]],lab=[...L.map((l,i)=>i?`${L[i-1].slice(3,5)}–${i===3?'60':l.slice(3,5)} мин`:l),key==='on'?'дольше часа':'дальше 30 мин'];
+  return `<div class="avc"><div class="avh"><b style="border-left-color:${cols[0]}">${title}</b><span>${sub}</span></div>
+   <div class="avv"><i>до 30 минут</i> <b class="mn">${n(c[2],1)}%</b> <i>покупателей · рост с января</i> <b>${sg(g,1)} п.п.</b></div>
+   <div class="avb">${seg.map((v,i)=>`<div style="width:${v.toFixed(2)}%;background:${cols[i]||'#e4e6e2'};color:${i<2?'#fff':'#2a332c'}" title="${lab[i]}: ${n(v,1)}% покупателей">${v>=7?n(v):''}</div>`).join('')}</div>
+   <div class="avl">${lab.map((l,i)=>`<span><i style="background:${cols[i]||'#e4e6e2'}"></i>${l}</span>`).join('')}</div></div>`}
 function lrkChart(f,ks){const s={fs:[f],ks,type:'all'},L=O(s),T=TK[f],ws=f==='WS';
   const cT='#d3d5d2',cF=ws?'#5fa56e':'#878e96',cP=ws?'#c6e2c1':'#d5d9dd';
   const bars=(t,fa,fo)=>{const a=[{v:t,c:cT,t:n(t)},{v:fa,c:cF,t:n(fa),m:1}];if(fo!=null)a.push({v:fo,c:cP,dash:cF,t:n(fo)});return a};
@@ -731,7 +738,7 @@ function vLrk(){const b=baseSel(),kv=!!S.k,L=O(b),both={fs:['WS','DS'],ks:b.ks,t
    ${cap(ws,'WS','ws')}${cap(ds,'DS','dk')}</div>`;
   const flt=`<div class="filters blk"><span class="fl">ФИЛЬТРЫ</span>${seg('f',kv?[['WS','White Store'],['DS','Dark Store']]:[['ALL','ВС + ДС'],['WS','White Store'],['DS','Dark Store']])}
    <div class="fg"><span>Период</span>${seg('lp',[['month','Месяц'],['quarter','Квартал'],['year','Год']])}</div>${kustDD()}<button class="rst" data-reset>Сбросить фильтры</button></div>`;
-  const ctl=`<div class="ctl"><h2>${kv?`Магазины: <span class="g">${kFull()}</span> <small style="font:500 14px Inter,sans-serif;color:#566459">· открытые в 2026 году</small>`:GROWS[S.g][0].toUpperCase()+GROWS[S.g].slice(1)}</h2>${kv?'<span class="sp1"></span>':attention(b,r=>{const t=tg(r.s,f=>TK[f].openY);return t>=3?pc(cnt(r.L,'dO',FULL.year),t):null},v=>'прогноз открытий '+pct(v))}${how('красным — скорость дольше цели и хуже средней по сети более чем на 10% · выручка ниже цели более чем на 20% · доля аренды выше цели более чем на 0,5 п.п. · CAPEX дороже цели более чем на 5% · прогноз — открыто + объекты, которые успевают открыться до конца периода · ROI — условная годовая прибыль магазинов к вложениям в их открытие (демо-расчёт) · доступность офлайн — доля жителей, у которых магазин ВС в 10 минутах пешком; онлайн — доля адресов с доставкой из ДС за 20–30 минут (демо)')}</div>`;
+  const ctl=`<div class="ctl"><h2>${kv?`Магазины: <span class="g">${kFull()}</span> <small style="font:500 14px Inter,sans-serif;color:#566459">· открытые в 2026 году</small>`:GROWS[S.g][0].toUpperCase()+GROWS[S.g].slice(1)}</h2>${kv?'<span class="sp1"></span>':attention(b,r=>{const t=tg(r.s,f=>TK[f].openY);return t>=3?pc(cnt(r.L,'dO',FULL.year),t):null},v=>'прогноз открытий '+pct(v))}${how('красным — скорость дольше цели и хуже средней по сети более чем на 10% · выручка ниже цели более чем на 20% · доля аренды выше цели более чем на 0,5 п.п. · CAPEX дороже цели более чем на 5% · прогноз — открыто + объекты, которые успевают открыться до конца периода · ROI — условная годовая прибыль магазинов к вложениям в их открытие (демо-расчёт) · доступность (демо, значения накопительные): офлайн — доля покупателей, которые доходят до магазина ВС пешком за 10 / 20 / 30 минут; онлайн — доля покупателей с расчётным временем доступности онлайн-заказа из ДС 10 / 20 / 30 минут / час; рост — изменение доли «до 30 минут» с января')}</div>`;
   const arow='';
   let tbl;const nsp=mean(opened(O({...b,ks:null}),RNG[S.lp]),o=>o.sp8);
   if(!kv){const PN={month:'Ноябрь',quarter:'IV квартал',year:'2026 год'},ot=p=>f=>p==='month'?TK[f].open.nov:p==='quarter'?TK[f].open.q[3]:TK[f].openY;
@@ -756,13 +763,13 @@ function vLrk(){const b=baseSel(),kv=!!S.k,L=O(b),both={fs:['WS','DS'],ks:b.ks,t
     if(on.includes('retail'))g.push({t:'✓ В розницу',sm:1,cols:[{h:['','передан'],v:r=>r.o?(r.o.retail?'да':'нет'):r.L.filter(o=>o.retail).length+' из '+r.L.length,red:(v,r)=>r.o&&!r.o.retail}]});
     const cC=[on.includes('capexStore')&&{h:['на магазин,','млн ₽'],d:1,v:sv(o=>o.capex,l=>mean(l,o=>o.capex)),red:(v,r)=>v>CFG[(r.o||r.L[0]).f].T.capex*1.05},on.includes('capexM2')&&{h:['за м²,','тыс. ₽'],d:1,v:sv(o=>o.capex*1000/o.area,l=>m2of(l))},on.includes('roi')&&{h:['ROI,','% год.'],d:1,v:sv(o=>roiL([o]),roiL)}].filter(Boolean);
     if(cC.length)g.push({t:'✓ Инвестиции',sm:cC.length<2,cols:cC});
-    const aK=S.f==='DS'?'availOn':'availOff';if(on.includes(aK))g.push({t:S.f==='DS'?'✓ Онлайн':'✓ Офлайн',sm:1,cols:[{h:S.f==='DS'?['за 20–30','мин, %']:['жителей в','10 мин, %'],d:1,v:sv(o=>o.av,l=>mean(l,o=>o.av))}]});
+    const aK=S.f==='DS'?'availOn':'availOff';if(on.includes(aK))g.push({t:S.f==='DS'?'✓ Онлайн':'✓ Офлайн',sm:1,cols:[{h:['до 30','мин, %'],d:1,v:sv(o=>o.av,l=>mean(l,o=>o.av))}]});
     tbl=table({fixedTitle:'Магазин',fixed:[{h:['','№'],w:44,al:'c',v:r=>r.i},{h:['','адрес'],w:250,al:'l',lab:1,v:r=>r.o.addr}],groups:g,rows,
       totals:[{L:op,lab:`${kFull()}, итого`},{L:opened(O({...b,ks:null})),lab:'Вся сеть'}],minCol:64,empty:`${kFull()}: нет магазинов ${FN[S.f]}, открытых в 2026 году`})}
   return header('Прототип дашборда ЛРК',`Результаты: ${pn}${kv?` · <span class="g">${kFull()}</span>`:''}`,crumbs())+promise('lrk')+flt+
    `<div class="lrk blk fade"><div class="lc">${band}${row1}${row2}${ctl}${arow}${tbl}</div><div class="rc">
    <div class="lch"><div class="ct mn">${kv?`Открытия: ${kFull()}, шт.`:{all:'Открытия по сети, шт.',kust:'Открытия по кустам, шт.',reg:'Открытия по регионам, шт.'}[S.g]}</div>${lrkChart('WS',b.ks)}</div><div class="lch">${lrkChart('DS',b.ks)}</div>
-   <div class="lch"><div class="ct mn">Доступность для клиента, %</div><div class="av2">${avChart('off',b.ks,'Офлайн · ВС','магазин в 10 мин пешком','#5fa56e')}${avChart('on',b.ks,'Онлайн · ДС','доставка за 20–30 мин','#878e96')}</div></div>
+   <div class="lch"><div class="ct mn">Доступность для покупателей, %${kv?' · '+kFull():''}</div>${avChart('off',b.ks,'Офлайн · White Store','пешая доступность магазина',['#3f9352','#7dbb86','#bfe0c0'])}${avChart('on',b.ks,'Онлайн · Dark Store','время доступности онлайн-заказа',['#5f6770','#878e96','#b4bac0','#d5d9dd'])}</div>
    ${kv?metricsBlock(avDefs(MKUST),'km','по магазину'):metricsBlock(avDefs(MNET),'m','')}</div></div>`}
 
 /* ---------- Поиск ---------- */
