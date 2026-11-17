@@ -203,6 +203,8 @@ table.t{border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%;
 .mt .hint{font-size:13px;color:#566459}
 .mt .cols{display:flex;gap:10px}
 .mt .cols>div{flex:1;min-width:0}
+.msub{font-size:12px;font-weight:700;color:#3f9352;margin:10px 0 4px;padding-top:8px;border-top:1px dashed #dcdfd8}
+.msoon{font-size:13px;color:#8a938c;font-style:italic;border:1px dashed #dcdfd8;border-radius:8px;padding:8px 10px}
 .mg{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#566459;margin:11px 0 5px}
 .ck{display:flex;align-items:flex-start;gap:8px;font-size:14px;line-height:18px;margin:5px 0;cursor:pointer;background:none;border:0;padding:0;text-align:left;width:100%}
 .ck i{flex:none;width:18px;height:18px;border-radius:4px;border:2px solid #9aa19b;background:#fff;font-style:normal;font-size:12px;font-weight:800;line-height:14px;text-align:center;color:#fff}
@@ -534,7 +536,7 @@ const J=o=>`data-set='${JSON.stringify(o)}'`;
 function dev(v,d,bad,unit=''){if(v==null||!isFinite(v))return '—';const t=sg(v,d)+unit;return bad?`<span class="bad">${v>0?'▲':'▼'} ${t}</span>`:`<b class="ok">${t}</b>`}
 function pdev(v,bad){if(v==null)return '—';return bad?`<span class="bad">▼ ${pct(v)}</span>`:`<b class="ok">${pct(v)}</b>`}
 
-const DEF={d:'home',g:'all',sm:'',h:'',cp:'',f:'WS',p:'week',lp:'month',k:'',r:'kust',t:'all',m:'rentShare,cost',km:'rentShare,nb,capexStore,capexM2'};
+const DEF={d:'home',g:'all',sm:'',h:'',cp:'',f:'WS',p:'week',lp:'month',k:'',r:'kust',t:'all',m:'rev,rentShare,cost',km:'rev,rentShare,nb,capexStore,capexM2'};
 let S={...DEF},SORT=null;
 const FN={WS:'White Store',DS:'Dark Store'};
 const DASH=[['lrk','ЛРК','Панель ЛРК'],['search','Поиск','Панель лидера поиска'],['rent','Аренда','Панель лидера аренды'],['build','Стройка','Панель лидера стройки']];
@@ -594,7 +596,7 @@ function chart(G,o){const w=o.w,h=o.h,top=o.top||20,bot=o.bot||40,base=h-bot,ph=
 /* любой блок колонок можно скрыть: S.h — список скрытых блоков, LASTG — блоки последней отрисованной таблицы (для панели настройки) */
 const DDEF={search:{h:'Ноябрь|IV квартал'}},CK=['h','sm','m','km'];   // вид по умолчанию и то, что запоминается в браузере
 const BRIEF={search:/^(Ноябрь|IV квартал|Новые открытия|Выручка новых открытий, тыс. ₽\/день)$/,rent:/переменная часть\)|^Договоры|^Долгосрочные|^Ноябрь$|^IV квартал$/,build:/^Площадь|за м²/,lrk:/^Выручка/};
-const saved=d=>{try{return JSON.parse(localStorage.getItem('vv_table_'+d)||'{}')}catch(e){return {}}};
+const saved=d=>{try{return JSON.parse(localStorage.getItem('vv_table3_'+d)||'{}')}catch(e){return {}}};
 const fresh=(d,clean)=>({...Object.fromEntries(Object.keys(DEF).filter(k=>k!=='d').map(k=>[k,DEF[k]])),...(DDEF[d]||{}),...(clean?{}:saved(d))});
 const briefSet=()=>LASTG.filter(g=>!g.t.startsWith('✓')&&BRIEF[S.d]&&BRIEF[S.d].test(GID(g))).map(GID).join('|');
 const GID=g=>g.t.replace(/^✓ /,'')+(g.t2?' ('+g.t2+')':'');
@@ -645,12 +647,19 @@ function vHome(){const ws={fs:['WS'],ks:null,type:'all'},both={fs:['WS','DS'],ks
   return `<div class="homehd">${LOGO(64)}<div style="flex:1">${header('Рабочие панели развития','Выберите рабочую панель','910-я неделя')}</div></div>`+`<div class="cards">${DASH.map(([id,,full])=>`<button class="card" ${J({d:id})}><div class="cardhd"><h3>${full}</h3></div><p><b>Обещание:</b> ${PROMISE[id][1]}</p><div class="k3">${K[id].map(([v,l,t,bad])=>`<div><b>${v}</b><span>${l}</span><em class="${bad?'bad':''}">${bad?'● ':''}${t}</em></div>`).join('')}</div><div class="lv3">${LV[id]}</div></button>`).join('')}</div>`}
 
 /* ---------- ЛРК ---------- */
-const MNET=[[['Аренда',[['rentShare','доля аренды'],['rentNew','доля новых открытий'],['opt','оптимизация'],['prol','пролонгации']]],['Субаренда',[['subl','сдано, %'],['sublDev','откл. от 97%']]],['Поиск',[['signed','подписано'],['toBuild','передано в стройку'],['openedN','открыто'],['pipeF','пайплайн (прогноз к цели)']]]],
- [['Расширения',[['expT','к цели'],['expCapex','CAPEX на 1 магазин'],['expRev','прирост выручки']]],['Стройка',[['cost','стоимость открытия'],['capexM2','CAPEX новых открытий за м²'],['budget','% израсходованного бюджета'],['smrM2','СМР за м²'],['smr','срок СМР'],['noAho','не передано в АХО']]],['Новички',[['nbShare','доля новичков, %']]]]];
-const MKUST=[[['Аренда',[['rentShare','доля аренды'],['varPart','доля аренды: переменная часть'],['lease','остаточный срок договора аренды']]],['Субаренда',[['free','свободная площадь, %']]],['Новички',[['nb','новички, чел.'],['nbShare','доля новичков, %']]]],
- [['Открытие',[['retail','передан в розницу']]],['Стройка · CAPEX',[['capexStore','на магазин, млн ₽'],['capexM2','за м², тыс. ₽']]]]];
+const MNET=[[['Новые открытия',[['signed','подписано'],['toBuild','передано в стройку'],['openedN','открыто'],['pipeF','пайплайн (прогноз к цели)'],['expT','расширения к цели'],['smr','срок СМР'],['noAho','не передано в АХО'],['nbShare','доля новичков, %'],
+   ['#','Инвестиции'],['roi','ROI и окупаемость'],['budget','% израсходованного бюджета'],['cost','стоимость открытия (CAPEX)'],['capexM2','CAPEX за м²'],['smrM2','СМР за м²'],['expCapex','CAPEX расширения на 1 магазин']]]],
+ [['Эффективность',[['rentShare','доля аренды'],['rentNew','доля аренды новых открытий'],['opt','оптимизация аренды'],['prol','пролонгации'],['subl','субаренда: сдано, %'],['sublDev','субаренда: откл. от 97%']]],
+  ['Выручка',[['rev','выручка новых открытий'],['expRev','прирост выручки расширений']]],['Клиентские метрики',[]]]];
+const MKUST=[[['Новые открытия',[['retail','передан в розницу'],['nb','новички, чел.'],['nbShare','доля новичков, %'],['#','Инвестиции'],['roi','ROI, %'],['capexStore','CAPEX на магазин, млн ₽'],['capexM2','CAPEX за м², тыс. ₽']]]],
+ [['Эффективность',[['rentShare','доля аренды'],['varPart','доля аренды: переменная часть'],['lease','остаточный срок договора аренды'],['free','свободная площадь, %']]],['Выручка',[['rev','выручка магазина']]],['Клиентские метрики',[]]]];
+/* ROI (демо): годовая операционная прибыль (условно 6,2% выручки) к вложениям в открытие */
+const ROIM=.062,roiL=l=>{const c=sum(l,o=>o.capex);return l.length&&c?sum(l,o=>o.rev)*365*ROIM/(c*1000)*100:null};
 function netMetric(id){const p=S.lp,y=RNG[p],mo=PMON(p),ok=p==='year'?'ytd':p,opp=r=>opened(r.L,y),ex=r=>opp(r).filter(o=>o.t==='exp');
   switch(id){
+   case 'rev':return{t:'✓ Выручка новых открытий',cols:[{h:['выручка','в день'],v:r=>mean(opp(r),o=>o.rev)},{h:['выручка','на м²'],d:1,v:r=>{const o=opp(r);return o.length?sum(o,x=>x.rev*30)/sum(o,x=>x.area):null}},
+       {h:['откл.','от цели'],v:r=>{const o=opp(r);return o.length?(mean(o,x=>x.rev)/tgtOf(o,'rev')-1)*100:null},f:spct,red:v=>v<-20}]};
+   case 'roi':return{t:'✓ ROI',cols:[{h:['ROI,','% год.'],d:1,v:r=>roiL(opp(r))},{h:['окуп.,','мес'],v:r=>{const v=roiL(opp(r));return v?1200/v:null}}]};
    case 'rentShare':return{t:'✓ Доля аренды',cols:[{h:['','доля, %'],d:1,v:r=>rentAgg(r.s,mo).sh},{h:['откл.','п.п.'],v:r=>{const a=rentAgg(r.s,mo);return a.sh-a.tSh},f:v=>sg(v,1),red:v=>v>.5}]};
    case 'rentNew':return{t:'✓ Аренда новых',sm:1,cols:[{h:['доля','нов., %'],d:1,v:r=>rentNew(r.L)}]};
    case 'opt':return{t:'✓ Оптимизация',sm:1,cols:[{h:['','млн ₽'],d:1,v:r=>optSum(r.s,y).t},{h:['% вып.','цели'],v:r=>pc(optSum(r.s,y).t,optT(r.s,ok)),f:pct,red:v=>v<80}]};
@@ -672,7 +681,7 @@ function netMetric(id){const p=S.lp,y=RNG[p],mo=PMON(p),ok=p==='year'?'ytd':p,op
    case 'noAho':return{t:'✓ Не в АХО',sm:1,cols:[{h:['не пере-','дано'],v:r=>opp(r).filter(o=>!o.aho).length}]};
    case 'nbShare':return{t:'✓ Новички',sm:1,cols:[{h:['доля,','%'],v:r=>mean(opp(r),o=>o.nbSh)}]}}}
 function metricsBlock(defs,key,hint){const on=S[key].split(',');
-  return `<div class="mt"><h3>Метрики в таблице</h3>${hint?`<div class="hint">${hint}</div>`:''}<div class="pick">${colPicker()}</div><div class="cols">${defs.map(col=>`<div>${col.map(([g,items])=>`<div class="mg">${g}</div>${items.map(([id,l])=>`<button class="ck ${on.includes(id)?'on':''}" data-tog="${key}:${id}"><i>${on.includes(id)?'✓':''}</i><span>${l}</span></button>`).join('')}`).join('')}</div>`).join('')}</div></div>`}
+  return `<div class="mt"><h3>Метрики в таблице</h3>${hint?`<div class="hint">${hint}</div>`:''}<div class="pick">${colPicker()}</div><div class="cols">${defs.map(col=>`<div>${col.map(([g,items])=>`<div class="mg">${g}</div>${items.length?'':'<div class="msoon">будет дополнено позже</div>'}${items.map(([id,l])=>id==='#'?`<div class="msub">${l}</div>`:`<button class="ck ${on.includes(id)?'on':''}" data-tog="${key}:${id}"><i>${on.includes(id)?'✓':''}</i><span>${l}</span></button>`).join('')}`).join('')}</div>`).join('')}</div></div>`}
 function lrkChart(f,ks){const s={fs:[f],ks,type:'all'},L=O(s),T=TK[f],ws=f==='WS';
   const cT='#d3d5d2',cF=ws?'#5fa56e':'#878e96',cP=ws?'#c6e2c1':'#d5d9dd';
   const bars=(t,fa,fo)=>{const a=[{v:t,c:cT,t:n(t)},{v:fa,c:cF,t:n(fa),m:1}];if(fo!=null)a.push({v:fo,c:cP,dash:cF,t:n(fo)});return a};
@@ -681,27 +690,28 @@ function lrkChart(f,ks){const s={fs:[f],ks,type:'all'},L=O(s),T=TK[f],ws=f==='WS
   ['I кв.','II кв.','III кв.','IV кв.'].forEach((l,q)=>G.push(mk(l,tg(s,x=>T.open.q[q]),cnt(L,'dO',[QR[q][0],Math.min(QR[q][1],REP)]),q===3?cnt(L,'dO',FULL.quarter):null,{lc:'cls'})));
   G.push(mk('2026 год',tg(s,x=>T.openY),cnt(L,'dO',RNG.year),cnt(L,'dO',FULL.year),{sep:1,wt:1.25,bw:19}));
   return `<div class="row"><b class="${ws?'':'dk'}">${FN[f]} (${ws?'ВС':'ДС'})</b><span><i style="background:${cT}"></i>цель</span><span><i style="background:${cF}"></i>факт</span><span><i class="${ws?'d':'dd'}"></i>прогноз</span></div>`+chart(G,{w:446,h:112,top:18,bot:22,bw:15,gap:2,cls:'sm'})}
-function vLrk(){const b=baseSel(),kv=!!S.k,L=O(b),both={fs:['WS','DS'],ks:b.ks,type:'all'},LB=O(both),ws=LB.filter(o=>o.f==='WS'),ds=LB.filter(o=>o.f==='DS'),wk=RNG.week,y=RNG.year;
+function vLrk(){const b=baseSel(),kv=!!S.k,L=O(b),both={fs:['WS','DS'],ks:b.ks,type:'all'},LB=O(both),ws=LB.filter(o=>o.f==='WS'),ds=LB.filter(o=>o.f==='DS'),lp=S.lp,P=RNG[lp],yr=lp==='year',pn=PNM[lp],y=RNG.year;
+  const otp=f=>lp==='month'?TK[f].open.nov:lp==='quarter'?TK[f].open.q[3]:TK[f].openY,tP=tg(both,otp),fP=cnt(LB,'dO',FULL[lp]);
   const toDate=f=>{const s={fs:[f],ks:b.ks,type:'all'},q=TK[f].open.q;return tg(s,()=>q[0])+tg(s,()=>q[1])+tg(s,()=>q[2])+tg(s,()=>q[3])*39/92};
   const oy=cnt(LB,'dO',y),ty=Math.round(toDate('WS')+toDate('DS'));
-  const spd=(lab,l,f)=>{const op=opened(l),v=mean(op,o=>o.sp8),t=CFG[f].T.speed;return `${lab}: <b>${n(v)}${v==null?'':' дн'}</b> <i>· цель ${t} ·</i> ${v==null?'—':dev(Math.round(v)-t,0,Math.round(v)>t,' дн')}`};
-  const band=`<div class="lband"><div class="big mn">${cnt(LB,'dO',wk)}</div><div><div class="ttl mn">Новые открытия <span class="g">ВС ${cnt(ws,'dO',wk)}</span><span> · </span><span class="ds">ДС ${cnt(ds,'dO',wk)}</span></div>
-   <div class="ln"><i>с начала года</i> <b>${oy}</b> <i>· цель на дату ${ty} ·</i> ${dev(oy-ty,0,oy<ty)}</div>
+  const spd=(lab,l,f)=>{const op=opened(l,P),v=mean(op,o=>o.sp8),t=CFG[f].T.speed;return `${lab}: <b>${n(v)}${v==null?'':' дн'}</b> <i>· цель ${t} ·</i> ${v==null?'—':dev(Math.round(v)-t,0,Math.round(v)>t,' дн')}`};
+  const band=`<div class="lband"><div class="big mn">${cnt(LB,'dO',P)}</div><div><div class="ttl mn">Новые открытия · ${pn} <span class="g">ВС ${cnt(ws,'dO',P)}</span><span> · </span><span class="ds">ДС ${cnt(ds,'dO',P)}</span></div>
+   <div class="ln">${yr?'':`<i>цель периода</i> <b>${n(tP)}</b> <i>· прогноз</i> <b>${fP}</b> <i>·</i> `}<i>с начала года</i> <b>${oy}</b> <i>· цель на дату ${ty} ·</i> ${dev(oy-ty,0,oy<ty)}</div>
    <div class="ln"><b>Скорость открытия</b> ${spd('<b class="g">ВС</b>',ws,'WS')} &nbsp;&nbsp; ${spd('<b class="ds">ДС</b>',ds,'DS')}</div></div></div>`;
-  const lt=(name,key,tf)=>{const yv=cnt(L,key,y),t=tg(b,tf);return `<div class="lt"><div class="ln">${name}</div><div class="lv mn">${cnt(L,key,wk)}</div><div class="ll">с нач. года: <b>${yv}</b></div><div class="ll">цель ${n(t)} · ${dev(yv-t,0,yv<t)}</div></div>`};
-  const ex=L.filter(o=>o.t==='exp'),exY=cnt(ex,'dO',y),exT=tg(b,f=>TK[f].exp),opB=opened(LB);
+  const lt=(name,key,tf)=>{const yv=cnt(L,key,y),t=tg(b,tf);return `<div class="lt"><div class="ln">${name}</div><div class="lv mn">${cnt(L,key,P)}</div><div class="ll">${yr?'с начала года':`за ${pn} · с нач. года: <b>${yv}</b>`}</div><div class="ll">цель года ${n(t)} · ${dev(yv-t,0,yv<t)}</div></div>`};
+  const ex=L.filter(o=>o.t==='exp'),exY=cnt(ex,'dO',y),exT=tg(b,f=>TK[f].exp),opB=opened(LB),opBP=opened(LB,P);
   const row1=`<div class="lrow" style="grid-template-columns:repeat(4,1fr)">${lt('Подписано','dS',f=>TK[f].sign.year)}${lt('Передано в стройку','dB',f=>TK[f].build)}
-   <div class="lt"><div class="ln">Расширения</div><div class="lv mn">${cnt(ex,'dO',wk)}</div><div class="ll">с нач. года: <b>${exY}</b></div><div class="ll">цель ${n(exT)} · ${dev(exY-exT,0,exY<exT)}</div></div>
-   <div class="lt"><div class="ln">Новички в новых ТТ</div><div class="lv mn">${n(sum(opB,o=>o.nbW))}</div><div class="ll">с нач. года: <b>${n(sum(opB,o=>o.nbY))}</b></div><div class="ll">доля <b>${n(mean(opB,o=>o.nbSh))}%</b> · <b class="g">ВС ${n(sum(opened(ws),o=>o.nbW))}</b> · <b class="ds">ДС ${n(sum(opened(ds),o=>o.nbW))}</b></div></div></div>`;
-  const ow=optSum(b,wk).t,owT=optT(b,'week'),op=opened(L),rev=mean(op,o=>o.rev),revT=tgtOf(op,'rev');
-  const cap=(l,f,cl)=>{const o=opened(l),c=mean(o,x=>x.capex),t=CFG[f].T.capex;return `<div class="lt ${cl}"><div class="ln">CAPEX открытий ${f==='WS'?'ВС':'ДС'}</div><div class="l2"><div><div class="lv mn">${n(c,1)}</div><div class="lu">млн ₽</div></div><div><div class="lv mn">${n(m2of(o),1)}</div><div class="lu">тыс. ₽/м²</div></div></div><div class="ll">цель ${n(t,1)} · ${c==null?'—':dev(c-t,1,c>t)}</div></div>`};
+   <div class="lt"><div class="ln">Расширения</div><div class="lv mn">${cnt(ex,'dO',P)}</div><div class="ll">${yr?'с начала года':`за ${pn} · с нач. года: <b>${exY}</b>`}</div><div class="ll">цель года ${n(exT)} · ${dev(exY-exT,0,exY<exT)}</div></div>
+   <div class="lt"><div class="ln">Новички в новых ТТ</div><div class="lv mn">${n(sum(opBP,o=>o.nbY))}</div><div class="ll">${yr?'с начала года':`в открытых за ${pn} · с нач. года: <b>${n(sum(opB,o=>o.nbY))}</b>`}</div><div class="ll">доля <b>${n(mean(opBP,o=>o.nbSh))}${opBP.length?'%':''}</b> · <b class="g">ВС ${n(sum(opened(ws,P),o=>o.nbY))}</b> · <b class="ds">ДС ${n(sum(opened(ds,P),o=>o.nbY))}</b></div></div></div>`;
+  const ow=optSum(b,P).t,owT=optT(b,yr?'ytd':lp),op=opened(L),opP=opened(L,P),rev=mean(opP,o=>o.rev),revT=opP.length?tgtOf(opP,'rev'):null;
+  const cap=(l,f,cl)=>{const o=opened(l,P),c=mean(o,x=>x.capex),t=CFG[f].T.capex;return `<div class="lt ${cl}"><div class="ln">CAPEX открытий ${f==='WS'?'ВС':'ДС'}</div><div class="l2"><div><div class="lv mn">${n(c,1)}</div><div class="lu">млн ₽</div></div><div><div class="lv mn">${n(m2of(o),1)}</div><div class="lu">тыс. ₽/м²</div></div></div><div class="ll">цель ${n(t,1)} · ${c==null?'—':dev(c-t,1,c>t)}</div></div>`};
   const row2=`<div class="lrow" style="grid-template-columns:.85fr 1.15fr 1fr 1fr">
-   <div class="lt"><div class="ln">Оптимизация аренды</div><div class="lv mn">${n(ow,ow<1?2:1)}</div><div class="ll">за неделю, млн ₽</div><div class="ll">цель ${n(owT,owT<1?2:1)} · ${pdev(pc(ow,owT),ow<owT)}</div></div>
-   <div class="lt"><div class="ln">Выручка новых открытий</div><div class="l2"><div><div class="lv mn">${n(rev)}</div><div class="lu">тыс. ₽/день</div></div><div><div class="lv mn">${op.length?n(sum(op,o=>o.rev*30)*1000/sum(op,o=>o.area)/100*100,0):'—'}</div><div class="lu">₽/м² в мес.</div></div></div><div class="ll"><b class="g">ВС ${n(mean(opened(ws),o=>o.rev))}</b> · <b class="ds">ДС ${n(mean(opened(ds),o=>o.rev))}</b> · ${pdev(pc(rev,revT),rev<revT)}</div></div>
+   <div class="lt"><div class="ln">Оптимизация аренды</div><div class="lv mn">${n(ow,ow<1?2:1)}</div><div class="ll">${yr?'с начала года':'за '+pn}, млн ₽</div><div class="ll">цель ${n(owT,owT<1?2:1)} · ${pdev(pc(ow,owT),ow<owT)}</div></div>
+   <div class="lt"><div class="ln">Выручка новых открытий</div><div class="l2"><div><div class="lv mn">${n(rev)}</div><div class="lu">тыс. ₽/день</div></div><div><div class="lv mn">${opP.length?n(sum(opP,o=>o.rev*30)*1000/sum(opP,o=>o.area)/100*100,0):'—'}</div><div class="lu">₽/м² в мес.</div></div></div><div class="ll"><b class="g">ВС ${n(mean(opened(ws,P),o=>o.rev))}</b> · <b class="ds">ДС ${n(mean(opened(ds,P),o=>o.rev))}</b> · ${opP.length?pdev(pc(rev,revT),rev<revT):'—'}</div></div>
    ${cap(ws,'WS','ws')}${cap(ds,'DS','dk')}</div>`;
   const flt=`<div class="filters blk"><span class="fl">ФИЛЬТРЫ</span>${seg('f',kv?[['WS','White Store'],['DS','Dark Store']]:[['ALL','ВС + ДС'],['WS','White Store'],['DS','Dark Store']])}
-   ${kv?'':`<div class="fg"><span>Период таблицы</span>${seg('lp',[['month','Месяц'],['quarter','Квартал'],['year','Год']])}</div>`}${kustDD()}<button class="rst" data-reset>Сбросить фильтры</button></div>`;
-  const ctl=`<div class="ctl"><h2>${kv?`Магазины: <span class="g">${kFull()}</span>`:GROWS[S.g][0].toUpperCase()+GROWS[S.g].slice(1)}</h2>${kv?'<span class="sp1"></span>':attention(b,r=>{const t=tg(r.s,f=>TK[f].openY);return t>=3?pc(cnt(r.L,'dO',FULL.year),t):null},v=>'прогноз открытий '+pct(v))}${how('красным — скорость дольше цели и хуже средней по сети более чем на 10% · выручка ниже цели более чем на 20% · доля аренды выше цели более чем на 0,5 п.п. · CAPEX дороже цели более чем на 5% · прогноз — открыто + объекты, которые успевают открыться до конца периода')}</div>`;
+   <div class="fg"><span>Период</span>${seg('lp',[['month','Месяц'],['quarter','Квартал'],['year','Год']])}</div>${kustDD()}<button class="rst" data-reset>Сбросить фильтры</button></div>`;
+  const ctl=`<div class="ctl"><h2>${kv?`Магазины: <span class="g">${kFull()}</span> <small style="font:500 14px Inter,sans-serif;color:#566459">· открытые в 2026 году</small>`:GROWS[S.g][0].toUpperCase()+GROWS[S.g].slice(1)}</h2>${kv?'<span class="sp1"></span>':attention(b,r=>{const t=tg(r.s,f=>TK[f].openY);return t>=3?pc(cnt(r.L,'dO',FULL.year),t):null},v=>'прогноз открытий '+pct(v))}${how('красным — скорость дольше цели и хуже средней по сети более чем на 10% · выручка ниже цели более чем на 20% · доля аренды выше цели более чем на 0,5 п.п. · CAPEX дороже цели более чем на 5% · прогноз — открыто + объекты, которые успевают открыться до конца периода · ROI — условная годовая прибыль магазинов к вложениям в их открытие (демо-расчёт)')}</div>`;
   const arow='';
   let tbl;const nsp=mean(opened(O({...b,ks:null}),RNG[S.lp]),o=>o.sp8);
   if(!kv){const PN={month:'Ноябрь',quarter:'IV квартал',year:'2026 год'},ot=p=>f=>p==='month'?TK[f].open.nov:p==='quarter'?TK[f].open.q[3]:TK[f].openY;
@@ -709,15 +719,13 @@ function vLrk(){const b=baseSel(),kv=!!S.k,L=O(b),both={fs:['WS','DS'],ks:b.ks,t
       {h:['прогн.','%'],v:r=>pc(cnt(r.L,'dO',FULL[p]),tg(r.s,ot(p))),f:pct}]});
     const groups=[pg(S.lp),
      {t:'Скорость, дн',cols:[{h:['','средн.'],v:r=>mean(opened(r.L,RNG[S.lp]),o=>o.sp8)},{h:['','откл.'],v:r=>{const o=opened(r.L,RNG[S.lp]);return o.length?Math.round(mean(o,x=>x.sp8))-Math.round(tgtOf(o,'speed')):null},f:v=>sg(v),red:(v,r)=>v>0&&nsp!=null&&mean(opened(r.L,RNG[S.lp]),x=>x.sp8)>nsp*1.1}]},
-     {t:'Выручка новых открытий',cols:[{h:['выручка','в день'],v:r=>mean(opened(r.L,RNG[S.lp]),o=>o.rev)},{h:['выручка','на м²'],d:1,v:r=>{const o=opened(r.L,RNG[S.lp]);return o.length?sum(o,x=>x.rev*30)/sum(o,x=>x.area):null}},
-       {h:['откл.','от цели'],v:r=>{const o=opened(r.L,RNG[S.lp]);return o.length?(mean(o,x=>x.rev)/tgtOf(o,'rev')-1)*100:null},f:spct,red:v=>v<-20}]},
-     ...MNET.flat().flatMap(g=>g[1]).filter(([id])=>S.m.split(',').includes(id)).map(([id])=>netMetric(id))];
+     ...MNET.flat().flatMap(g=>g[1]).filter(([id])=>id!=='#'&&S.m.split(',').includes(id)).map(([id])=>netMetric(id))];
     tbl=table({fixed:[kustCol],groups,rows:kRows(b),totals:tots(b),minCol:60,rowClick:r=>({k:KID(r.k)})})}
   else{const on=S.km.split(','),sv=(fo,fl)=>r=>r.o?fo(r.o):r.L.length?fl(r.L):null,rows=op.slice().sort((a,c)=>a.dO-c.dO).map((o,i)=>({o,i:i+1}));
     const g=[{t:'Открытие',sm:1,cols:[{h:['','дата'],v:r=>r.o?dm(r.o.dO):r.L.length+' шт.'}]},
      {t:'Скорость, дн',cols:[{h:['','факт'],v:sv(o=>o.sp8,l=>mean(l,o=>o.sp8))},{h:['','откл.'],v:sv(o=>Math.round(o.sp8)-CFG[o.f].T.speed,l=>Math.round(mean(l,o=>o.sp8))-CFG[l[0].f].T.speed),f:v=>sg(v),red:v=>v>0}]},
-     {t:'Выручка',cols:[{h:['в день,','тыс. ₽'],v:sv(o=>o.rev,l=>mean(l,o=>o.rev))},{h:['на м²,','тыс. ₽'],d:1,v:sv(o=>o.rev*30/o.area,l=>sum(l,o=>o.rev*30)/sum(l,o=>o.area))},
-       {h:['откл.','от цели'],v:sv(o=>(o.rev/CFG[o.f].T.rev-1)*100,l=>(mean(l,o=>o.rev)/CFG[l[0].f].T.rev-1)*100),f:spct,red:v=>v<-20}]}];
+     on.includes('rev')&&{t:'✓ Выручка',cols:[{h:['в день,','тыс. ₽'],v:sv(o=>o.rev,l=>mean(l,o=>o.rev))},{h:['на м²,','тыс. ₽'],d:1,v:sv(o=>o.rev*30/o.area,l=>sum(l,o=>o.rev*30)/sum(l,o=>o.area))},
+       {h:['откл.','от цели'],v:sv(o=>(o.rev/CFG[o.f].T.rev-1)*100,l=>(mean(l,o=>o.rev)/CFG[l[0].f].T.rev-1)*100),f:spct,red:v=>v<-20}]}].filter(Boolean);
     const nbC=[on.includes('nb')&&{h:['','чел.'],v:sv(o=>o.nbY,l=>sum(l,o=>o.nbY))},on.includes('nbShare')&&{h:['доля,','%'],v:sv(o=>o.nbSh,l=>mean(l,o=>o.nbSh))}].filter(Boolean);
     if(nbC.length)g.push({t:'✓ Новички',sm:nbC.length<2,cols:nbC});
     const rsL=l=>sum(l,o=>o.rs*o.rev)/sum(l,o=>o.rev);
@@ -726,11 +734,11 @@ function vLrk(){const b=baseSel(),kv=!!S.k,L=O(b),both={fs:['WS','DS'],ks:b.ks,t
     if(rC.length)g.push({t:'✓ Доля аренды',sm:rC.length<2,cols:rC});
     if(on.includes('free'))g.push({t:'✓ Субаренда',sm:1,cols:[{h:['своб.','пл., %'],d:1,v:sv(o=>o.free,l=>mean(l,o=>o.free))}]});
     if(on.includes('retail'))g.push({t:'✓ В розницу',sm:1,cols:[{h:['','передан'],v:r=>r.o?(r.o.retail?'да':'нет'):r.L.filter(o=>o.retail).length+' из '+r.L.length,red:(v,r)=>r.o&&!r.o.retail}]});
-    const cC=[on.includes('capexStore')&&{h:['на магазин,','млн ₽'],d:1,v:sv(o=>o.capex,l=>mean(l,o=>o.capex)),red:(v,r)=>v>CFG[(r.o||r.L[0]).f].T.capex*1.05},on.includes('capexM2')&&{h:['за м²,','тыс. ₽'],d:1,v:sv(o=>o.capex*1000/o.area,l=>m2of(l))}].filter(Boolean);
-    if(cC.length)g.push({t:'✓ CAPEX',sm:cC.length<2,cols:cC});
+    const cC=[on.includes('capexStore')&&{h:['на магазин,','млн ₽'],d:1,v:sv(o=>o.capex,l=>mean(l,o=>o.capex)),red:(v,r)=>v>CFG[(r.o||r.L[0]).f].T.capex*1.05},on.includes('capexM2')&&{h:['за м²,','тыс. ₽'],d:1,v:sv(o=>o.capex*1000/o.area,l=>m2of(l))},on.includes('roi')&&{h:['ROI,','% год.'],d:1,v:sv(o=>roiL([o]),roiL)}].filter(Boolean);
+    if(cC.length)g.push({t:'✓ Инвестиции',sm:cC.length<2,cols:cC});
     tbl=table({fixedTitle:'Магазин',fixed:[{h:['','№'],w:44,al:'c',v:r=>r.i},{h:['','адрес'],w:250,al:'l',lab:1,v:r=>r.o.addr}],groups:g,rows,
       totals:[{L:op,lab:`${kFull()}, итого`},{L:opened(O({...b,ks:null})),lab:'Вся сеть'}],minCol:64,empty:`${kFull()}: нет магазинов ${FN[S.f]}, открытых в 2026 году`})}
-  return header('Прототип дашборда ЛРК',`Результаты 910-й недели${kv?` · <span class="g">${kFull()}</span>`:''}`,crumbs())+promise('lrk')+flt+
+  return header('Прототип дашборда ЛРК',`Результаты: ${pn}${kv?` · <span class="g">${kFull()}</span>`:''}`,crumbs())+promise('lrk')+flt+
    `<div class="lrk blk fade"><div class="lc">${band}${row1}${row2}${ctl}${arow}${tbl}</div><div class="rc">
    <div class="lch"><div class="ct mn">${kv?`Открытия: ${kFull()}, шт.`:{all:'Открытия по сети, шт.',kust:'Открытия по кустам, шт.',reg:'Открытия по регионам, шт.'}[S.g]}</div>${lrkChart('WS',b.ks)}</div><div class="lch">${lrkChart('DS',b.ks)}</div>
    ${kv?metricsBlock(MKUST,'km','по магазину'):metricsBlock(MNET,'m','')}</div></div>`}
@@ -875,7 +883,7 @@ function norm(){if(!['home','lrk','search','rent','build'].includes(S.d))S.d='ho
 function fit(){const sc=Math.min(1.3,window.innerWidth/1920);app.style.transform=`scale(${sc})`;
   const tw=document.getElementById('tw');if(tw){tw.style.maxHeight='none';const top=tw.getBoundingClientRect().top;tw.style.maxHeight=Math.max(270,(window.innerHeight-top-window.scrollY*0)/sc-30)+'px'}
   scaler.style.height=app.offsetHeight*sc+'px'}
-function render(){norm();save();if(S.d!=='home')try{localStorage.setItem('vv_table_'+S.d,JSON.stringify(Object.fromEntries(CK.map(k=>[k,S[k]]))))}catch(e){}
+function render(){norm();save();if(S.d!=='home')try{localStorage.setItem('vv_table3_'+S.d,JSON.stringify(Object.fromEntries(CK.map(k=>[k,S[k]]))))}catch(e){}
   const v={home:vHome,lrk:vLrk,search:vSearch,rent:vRent,build:vBuild}[S.d];
   app.innerHTML=(S.d==='home'?'':nav())+v();document.title=(S.d==='home'?'Дашборды команды развития':DASH.find(x=>x[0]===S.d)[2])+' — прототип';if(S.d!==render.last)window.scrollTo(0,0);render.last=S.d;fit()}
 /* фильтры у каждого дашборда свои; HIST — история изменений для «Отменить фильтр» */
@@ -896,7 +904,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-set],[data
   if(t.dataset.col){const a=S.h?S.h.split('|'):[],i=a.indexOf(t.dataset.col);i<0?a.push(t.dataset.col):a.splice(i,1);pushHist();SORT=null;S.h=a.join('|');return render()}
   if(t.dataset.tog){const [key,id]=t.dataset.tog.split(':'),a=S[key]?S[key].split(','):[];const i=a.indexOf(id);i<0?a.push(id):a.splice(i,1);pushHist();S[key]=a.join(',');return render()}
   if(t.dataset.sort){const i=+t.dataset.sort;SORT=SORT&&SORT.i===i?(SORT.d===-1?{i,d:1}:null):{i,d:-1};const tw=document.getElementById('tw'),sl=tw?tw.scrollLeft:0;render();const n2=document.getElementById('tw');if(n2)n2.scrollLeft=sl;return}
-  if(t.hasAttribute('data-reset')){const d=S.d;if(FK.some(k=>S[k]!==DEF[k]))pushHist();try{localStorage.removeItem('vv_table_'+d)}catch(e){}S={...fresh(d,true),d};SORT=null;return render()}
+  if(t.hasAttribute('data-reset')){const d=S.d;if(FK.some(k=>S[k]!==DEF[k]))pushHist();try{localStorage.removeItem('vv_table3_'+d)}catch(e){}S={...fresh(d,true),d};SORT=null;return render()}
   if(t.hasAttribute('data-undo')){const h=HIST[S.d];if(h&&h.length){Object.assign(S,h.pop());SORT=null;render()}return}});
 document.addEventListener('mousemove',e=>{const t=e.target.closest&&e.target.closest('[data-tip]');
   if(!t||!t.dataset.tip){tip.style.display='none';return}
